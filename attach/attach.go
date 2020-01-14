@@ -1,6 +1,12 @@
 package attach
 
-import "github.com/giantswarm/microerror"
+import (
+	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/giantswarm/microerror"
+)
 
 type Config struct {
 	DeviceName  string
@@ -27,8 +33,8 @@ func New(config Config) (*Service, error) {
 		return nil, microerror.Maskf(invalidConfigError, "config.TagValue must not be empty")
 	}
 
-	newService:=  &Service{
-		deviceName: config.DeviceName,
+	newService := &Service{
+		deviceName:  config.DeviceName,
 		forceDetach: config.ForceDetach,
 		tagKey:      config.TagKey,
 		tagValue:    config.TagValue,
@@ -37,6 +43,35 @@ func New(config Config) (*Service, error) {
 }
 
 func (s *Service) AttachEBSByTag() error {
+	awsSession := session.Must(session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+	}))
 
+	ec2Client := ec2.New(awsSession)
+
+	instanceID, err := getInstanceID(awsSession)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	fmt.Printf("Fetched Instance-ID '%s'\n", instanceID)
+
+	volumeID, err := s.getEBSVolumeID(ec2Client)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	fmt.Printf("Fetched Volume-ID '%s'\n", volumeID)
+
+	attachVolumeInput := &ec2.AttachVolumeInput{
+		Device:     aws.String(s.deviceName),
+		InstanceId: aws.String(instanceID),
+		VolumeId:   aws.String(volumeID),
+	}
+
+	attachment, err := ec2Client.AttachVolume(attachVolumeInput)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	fmt.Printf("Succefully attached volume. %s\n", attachment.String())
 	return nil
 }

@@ -48,7 +48,7 @@ func mainError() error {
 	var attachService *attach.Service
 	{
 		attachConfig := attach.Config{
-			DeviceName: f.DeviceName,
+			DeviceName:  f.DeviceName,
 			ForceDetach: f.ForceDetach,
 			TagKey:      f.TagKey,
 			TagValue:    f.TagValue,
