@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/giantswarm/aws-attach-ebs-by-tag/attach"
 	"os"
 
 	"github.com/giantswarm/microerror"
@@ -44,6 +45,22 @@ func mainError() error {
 	flag.Parse()
 
 	// implementation here
+	var attachService *attach.Service
+	{
+		attachConfig := attach.Config{
+			DeviceName: f.DeviceName,
+			ForceDetach: f.ForceDetach,
+			TagKey:      f.TagKey,
+			TagValue:    f.TagValue,
+		}
+
+		attachService, err = attach.New(attachConfig)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	err = attachService.AttachEBSByTag()
 
 	if err != nil {
 		return microerror.Mask(err)
