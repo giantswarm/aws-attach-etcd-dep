@@ -18,3 +18,14 @@ func getInstanceID(session *session.Session) (string, error) {
 
 	return instanceID, nil
 }
+
+func getRegion(session *session.Session) (string, error) {
+	ec2metadataClient := ec2metadata.New(session)
+
+	doc, err := ec2metadataClient.GetInstanceIdentityDocument()
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return doc.Region, nil
+}

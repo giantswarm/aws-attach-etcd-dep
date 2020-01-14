@@ -2,6 +2,7 @@ package attach
 
 import (
 	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -47,31 +48,53 @@ func (s *Service) AttachEBSByTag() error {
 		SharedConfigState: session.SharedConfigEnable,
 	}))
 
-	ec2Client := ec2.New(awsSession)
+	region, err := getRegion(awsSession)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	fmt.Printf("Fetched region '%s'\n", region)
 
 	instanceID, err := getInstanceID(awsSession)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	fmt.Printf("Fetched Instance-ID '%s'\n", instanceID)
+	fmt.Printf("Fetched instance-id '%s'\n", instanceID)
 
-	volumeID, err := s.getEBSVolumeID(ec2Client)
+	// recreate aws session, this time with proper region
+	awsSession, err = session.NewSession(&aws.Config{
+		Region: aws.String(region)},
+	)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	fmt.Printf("Fetched Volume-ID '%s'\n", volumeID)
+	// create ec2 client
+	ec2Client := ec2.New(awsSession)
 
-	attachVolumeInput := &ec2.AttachVolumeInput{
-		Device:     aws.String(s.deviceName),
-		InstanceId: aws.String(instanceID),
-		VolumeId:   aws.String(volumeID),
-	}
-
-	attachment, err := ec2Client.AttachVolume(attachVolumeInput)
+	volume, err := s.describeEBSVolume(ec2Client)
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	fmt.Printf("Fetched volume-id '%s'\n", *volume.VolumeId)
 
-	fmt.Printf("Succefully attached volume. %s\n", attachment.String())
+	if *volume.State == ec2.VolumeStateInUse &&
+		len(volume.Attachments) == 1 &&
+		*volume.Attachments[0].InstanceId == instanceID {
+		fmt.Printf("Volume is already attached to this instance. Nothing to do.\n")
+		return nil
+	} else if *volume.State == ec2.VolumeStateInUse {
+		fmt.Printf("Volume is attached to '%s' and is in state '%s'. Trying detach the volume\n", *volume.Attachments[0].InstanceId, *volume.State)
+
+		err := s.detachEBSVolume(ec2Client, volume)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	} else {
+		fmt.Printf("Volume state is '%s'.\n", *volume.State)
+	}
+
+	err = s.attachEBSVolume(ec2Client, instanceID, *volume.VolumeId)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 	return nil
 }

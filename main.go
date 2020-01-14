@@ -31,7 +31,7 @@ func mainError() error {
 	var f Flag
 	flag.StringVar(&f.DeviceName, "device-name", "/dev/xvdh", "Device name that will be used for attaching the EBS volume.")
 	flag.BoolVar(&f.ForceDetach, "force-detach", false, "If set to true, app will use force-detach if the EBS cannot be detached by normal detach operation..")
-	flag.StringVar(&f.TagKey, "tag-key", "my-ebs-tag", "Tag key that will be used to found the requested EBS in AWS API.")
+	flag.StringVar(&f.TagKey, "tag-key", "aws-attach-by-id", "Tag key that will be used to found the requested EBS in AWS API.")
 	flag.StringVar(&f.TagValue, "tag-value", "test", "Tag value that will be used to found the requested EBS in AWS API, this tag should identify one unique in one EBS.")
 
 	if len(os.Args) > 1 && os.Args[1] == "version" {
