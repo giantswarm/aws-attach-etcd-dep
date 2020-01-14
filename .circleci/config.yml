@@ -36,10 +36,6 @@ workflows:
   build_and_push:
     jobs:
       - build:
-          filters:
-            tags:
-              only: /^v.*/
-
       - architect/push-to-docker-legacy:
           name: push-aws-attach-ebs-by-tag-to-aliyun
           image: "registry-intl.cn-shanghai.aliyuncs.com/giantswarm/aws-attach-ebs-by-tag"
@@ -47,10 +43,6 @@ workflows:
           password_envar: "ALIYUN_PASSWORD"
           requires:
             - build
-          # Needed to trigger job only on merge to master.
-          filters:
-            branches:
-              only: master
 
       - deploy:
           filters:
