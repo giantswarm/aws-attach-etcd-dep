@@ -35,7 +35,7 @@ jobs:
 workflows:
   build_and_push:
     jobs:
-      - build:
+      - build
       - architect/push-to-docker-legacy:
           name: push-aws-attach-ebs-by-tag-to-aliyun
           image: "registry-intl.cn-shanghai.aliyuncs.com/giantswarm/aws-attach-ebs-by-tag"
