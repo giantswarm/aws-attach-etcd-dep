@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/aws-attach-ebs-by-tag/metadata"
+	"github.com/giantswarm/aws-attach-etcd-dep/metadata"
 )
 
 func getAWSSession() (*session.Session, error) {

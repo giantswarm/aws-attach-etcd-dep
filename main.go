@@ -2,15 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/giantswarm/aws-attach-ebs-by-tag/eni"
-	"github.com/giantswarm/aws-attach-ebs-by-tag/metadata"
 	"os"
 
 	"github.com/giantswarm/microerror"
 	flag "github.com/spf13/pflag"
 
-	"github.com/giantswarm/aws-attach-ebs-by-tag/pkg/project"
-	"github.com/giantswarm/aws-attach-ebs-by-tag/volume"
+	"github.com/giantswarm/aws-attach-etcd-dep/eni"
+	"github.com/giantswarm/aws-attach-etcd-dep/metadata"
+	"github.com/giantswarm/aws-attach-etcd-dep/pkg/project"
+	"github.com/giantswarm/aws-attach-etcd-dep/volume"
 )
 
 type Flag struct {
