@@ -1,4 +1,4 @@
-package attach
+package volume
 
 import (
 	"fmt"
@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	maxRetries    = 10
-	retryInterval = time.Second * 5
+	maxRetries    = 15
+	retryInterval = time.Second * 10
 )
 
 func (s *Service) getEBSVolumeID(ec2Client *ec2.EC2) (string, error) {
@@ -68,7 +68,7 @@ func (s *Service) attachEBSVolume(ec2Client *ec2.EC2, instanceID string, volumeI
 		}
 
 		if *volume.State != ec2.VolumeStateInUse && *volume.Attachments[0].InstanceId == instanceID {
-			fmt.Printf("Volume state is '%s', expecting '%s'. Retrying in %ds.\n", *volume.State, ec2.VolumeStateInUse, retryInterval/time.Second)
+			fmt.Printf("Volume state is '%s', expecting '%s', retrying in %ds.\n", *volume.State, ec2.VolumeStateInUse, retryInterval/time.Second)
 			return volumeNotAttachedError
 		}
 		return nil
@@ -105,8 +105,8 @@ func (s *Service) detachEBSVolume(ec2Client *ec2.EC2, volume *ec2.Volume) error 
 		}
 
 		if *volume.State != ec2.VolumeStateAvailable {
-			fmt.Printf("Volume state is '%s', expecting '%s'. Retrying in %ds.\n", *volume.State, ec2.VolumeStateAvailable, retryInterval/time.Second)
-			return volumeNotAttachedError
+			fmt.Printf("Volume state is '%s', expecting '%s', retrying in %ds.\n", *volume.State, ec2.VolumeStateAvailable, retryInterval/time.Second)
+			return volumeNotDetachedError
 		}
 		return nil
 	}

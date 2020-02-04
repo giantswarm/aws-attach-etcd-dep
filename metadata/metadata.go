@@ -1,4 +1,4 @@
-package attach
+package metadata
 
 import (
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
@@ -8,7 +8,7 @@ import (
 
 const metadataEndpointInstanceID = "instance-id"
 
-func getInstanceID(session *session.Session) (string, error) {
+func GetInstanceID(session *session.Session) (string, error) {
 	ec2metadataClient := ec2metadata.New(session)
 
 	instanceID, err := ec2metadataClient.GetMetadata(metadataEndpointInstanceID)
@@ -19,7 +19,7 @@ func getInstanceID(session *session.Session) (string, error) {
 	return instanceID, nil
 }
 
-func getRegion(session *session.Session) (string, error) {
+func GetRegion(session *session.Session) (string, error) {
 	ec2metadataClient := ec2metadata.New(session)
 
 	doc, err := ec2metadataClient.GetInstanceIdentityDocument()
