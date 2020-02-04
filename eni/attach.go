@@ -10,7 +10,7 @@ import (
 type Config struct {
 	AWSInstanceID string
 	AwsSession    *session.Session
-	DeviceIndex    int64
+	DeviceIndex   int64
 	ForceDetach   bool
 	TagKey        string
 	TagValue      string
@@ -19,7 +19,7 @@ type Config struct {
 type Service struct {
 	awsInstanceID string
 	awsSession    *session.Session
-	deviceIndex    int64
+	deviceIndex   int64
 	forceDetach   bool
 	tagKey        string
 	tagValue      string
@@ -45,7 +45,7 @@ func New(config Config) (*Service, error) {
 	newService := &Service{
 		awsInstanceID: config.AWSInstanceID,
 		awsSession:    config.AwsSession,
-		deviceIndex:    config.DeviceIndex,
+		deviceIndex:   config.DeviceIndex,
 		forceDetach:   config.ForceDetach,
 		tagKey:        config.TagKey,
 		tagValue:      config.TagValue,

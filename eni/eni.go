@@ -51,9 +51,9 @@ func (s *Service) describeEni(ec2Client *ec2.EC2) (*ec2.NetworkInterface, error)
 
 func (s *Service) attachEni(ec2Client *ec2.EC2, instanceID string, eniID string) error {
 	attachNetworkInterfaceInput := &ec2.AttachNetworkInterfaceInput{
-		DeviceIndex:     aws.Int64(s.deviceIndex),
-		InstanceId: aws.String(instanceID),
-		NetworkInterfaceId:   aws.String(eniID),
+		DeviceIndex:        aws.Int64(s.deviceIndex),
+		InstanceId:         aws.String(instanceID),
+		NetworkInterfaceId: aws.String(eniID),
 	}
 	attachment, err := ec2Client.AttachNetworkInterface(attachNetworkInterfaceInput)
 	if err != nil {
@@ -86,8 +86,8 @@ func (s *Service) attachEni(ec2Client *ec2.EC2, instanceID string, eniID string)
 
 func (s *Service) detachEni(ec2Client *ec2.EC2, eni *ec2.NetworkInterface) error {
 	detachNetworkInterfaceInput := &ec2.DetachNetworkInterfaceInput{
-		AttachmentId:     eni.Attachment.AttachmentId,
-		Force:      aws.Bool(s.forceDetach),
+		AttachmentId: eni.Attachment.AttachmentId,
+		Force:        aws.Bool(s.forceDetach),
 	}
 
 	detachment, err := ec2Client.DetachNetworkInterface(detachNetworkInterfaceInput)

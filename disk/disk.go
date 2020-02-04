@@ -1,12 +1,11 @@
 package disk
 
 import (
-	diskfs "github.com/shirou/gopsutil/disk"
 	"github.com/giantswarm/microerror"
+	diskfs "github.com/shirou/gopsutil/disk"
 )
 
 func MaybeCreateDiskFileSystem(diskName string, fsType string) error {
-
 
 	partList, err := diskfs.Partitions(false)
 	if err != nil {
@@ -27,13 +26,10 @@ func MaybeCreateDiskFileSystem(diskName string, fsType string) error {
 	}
 	//diskfs.
 
-
-
 	return nil
 }
 
-func MountDisk(diskName string, mountDir string) error{
-
+func MountDisk(diskName string, mountDir string) error {
 
 	return nil
 }
