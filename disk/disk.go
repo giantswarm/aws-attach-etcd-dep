@@ -20,7 +20,6 @@ func MaybeCreateDiskFileSystem(deviceName string, desiredFsType string) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	fmt.Printf(" found fstype %s\n", deviceFsType)
 	if deviceFsType == "" {
 		// format disk
 		err = runMkfs(deviceName, desiredFsType)
@@ -36,7 +35,6 @@ func MaybeCreateDiskFileSystem(deviceName string, desiredFsType string) error {
 func getFsType(deviceName string) (string, error) {
 	var out bytes.Buffer
 	cmd := exec.Command("/bin/lsblk", "-n", "-o", "FSTYPE", "-f", deviceName)
-	fmt.Printf("running %s %s %s %s %s %s", "/bin/lsblk", "-n", "-o", "FSTYPE", "-f", deviceName)
 	cmd.Stdout = &out
 	err := cmd.Run()
 	if err != nil {
