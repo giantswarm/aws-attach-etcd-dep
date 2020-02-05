@@ -55,7 +55,7 @@ func runMkfs(deviceName string, fsType string) error {
 		return microerror.Maskf(executionFailedError, fmt.Sprintf("fsType '%s' is not supported", fsType))
 	}
 
-	cmd := exec.Command("/sbin/mkfs", "-t", fsType, "L", diskLabel, deviceName)
+	cmd := exec.Command("/sbin/mkfs", "-t", fsType, "-L", diskLabel, deviceName)
 	err := cmd.Run()
 
 	if err != nil {
