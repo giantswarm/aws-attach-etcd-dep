@@ -1,11 +1,15 @@
 package disk
 
 import (
+	"fmt"
+
 	"github.com/giantswarm/microerror"
 	diskfs "github.com/shirou/gopsutil/disk"
 )
 
-func MaybeCreateDiskFileSystem(diskName string, fsType string) error {
+const diskLabel = "var-lib-etcd"
+
+func MaybeCreateDiskFileSystem(deviceName string, fsType string) error {
 
 	partList, err := diskfs.Partitions(false)
 	if err != nil {
@@ -13,23 +17,24 @@ func MaybeCreateDiskFileSystem(diskName string, fsType string) error {
 	}
 
 	var diskStat diskfs.PartitionStat
-
 	for _, p := range partList {
-		if p.Device == diskName {
+		if p.Device == deviceName {
 			diskStat = p
 			break
 		}
 	}
+	if diskStat.Device == "" {
+		fmt.Printf("Dis not any find any block device '%s'.", deviceName)
 
-	if diskStat.Fstype != fsType {
-
+		return microerror.Maskf(executionFailedError, fmt.Sprintf("block device '%s' not found", deviceName))
+	} else {
+		fmt.Printf("Found block device '%s' with fs type '%s'", diskStat.Device, diskStat.Fstype)
 	}
-	//diskfs.
-
-	return nil
-}
-
-func MountDisk(diskName string, mountDir string) error {
-
+	if diskStat.Fstype == "" {
+		// format disk
+		fmt.Printf("TODO run 'mkfs -t %s -L %s %s'\n", fsType, diskLabel, deviceName)
+	} else {
+		fmt.Printf("Block device '%s' has already file-system '%s'.\n", deviceName, fsType)
+	}
 	return nil
 }
