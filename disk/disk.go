@@ -23,6 +23,7 @@ func MaybeCreateDiskFileSystem(deviceName string, fsType string) error {
 			break
 		}
 	}
+	fmt.Printf("debug: %#v\n", partList)
 	if diskStat.Device == "" {
 		fmt.Printf("Dis not any find any block device '%s'.", deviceName)
 
