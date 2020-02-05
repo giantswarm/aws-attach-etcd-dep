@@ -1,41 +1,65 @@
 package disk
 
 import (
+	"bytes"
 	"fmt"
+	"os/exec"
+	"strings"
 
 	"github.com/giantswarm/microerror"
-	diskfs "github.com/shirou/gopsutil/disk"
 )
 
-const diskLabel = "var-lib-etcd"
+const (
+	diskLabel = "var-lib-etcd"
+)
 
-func MaybeCreateDiskFileSystem(deviceName string, fsType string) error {
+var supportedFsType = []string{"ext4"}
 
-	partList, err := diskfs.Partitions(false)
+func MaybeCreateDiskFileSystem(deviceName string, desiredFsType string) error {
+	deviceFsType, err := getFsType(deviceName)
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	if deviceFsType == "" {
+		// format disk
+		err = runMkfs(deviceName, deviceFsType)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	} else {
+		fmt.Printf("Block device '%s' has already file-system '%s'.\n", deviceName, desiredFsType)
+	}
+	return nil
+}
 
-	var diskStat diskfs.PartitionStat
-	for _, p := range partList {
-		if p.Device == deviceName {
-			diskStat = p
+func getFsType(deviceName string) (string, error) {
+	var out bytes.Buffer
+	cmd := exec.Command("/bin/lsblk", "-n", "-o", "FSTYPE", "-f", deviceName)
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		return "", microerror.Maskf(err, "failed to check fs type")
+	}
+	return strings.TrimSpace(out.String()), nil
+}
+
+func runMkfs(deviceName string, fsType string) error {
+	supported := false
+	for _, i := range supportedFsType {
+		if i == fsType {
+			supported = true
 			break
 		}
 	}
-	fmt.Printf("debug: %#v\n", partList)
-	if diskStat.Device == "" {
-		fmt.Printf("Did not any find any block device '%s'.\n", deviceName)
-
-		return microerror.Maskf(executionFailedError, fmt.Sprintf("block device '%s' not found", deviceName))
-	} else {
-		fmt.Printf("Found block device '%s' with fs type '%s'", diskStat.Device, diskStat.Fstype)
+	if !supported {
+		return microerror.Maskf(executionFailedError, fmt.Sprintf("fsType '%s' is not supported", fsType))
 	}
-	if diskStat.Fstype == "" {
-		// format disk
-		fmt.Printf("TODO run 'mkfs -t %s -L %s %s'\n", fsType, diskLabel, deviceName)
-	} else {
-		fmt.Printf("Block device '%s' has already file-system '%s'.\n", deviceName, fsType)
+
+	cmd := exec.Command("/sbin/mkfs", "-t", fsType, "L", diskLabel, deviceName)
+	err := cmd.Run()
+
+	if err != nil {
+		return microerror.Mask(err)
 	}
 	return nil
 }
