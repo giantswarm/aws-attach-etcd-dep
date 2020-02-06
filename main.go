@@ -116,6 +116,12 @@ func mainError() error {
 		return microerror.Mask(err)
 	}
 
+	// it takes a second or two until kernel register the device under `/dev`
+	err = disk.WaitForDeviceReady(f.VolumeDeviceName)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	err = disk.MaybeCreateDiskFileSystem(f.VolumeDeviceName, f.VolumeDeviceFsType)
 	if err != nil {
 		return microerror.Mask(err)
