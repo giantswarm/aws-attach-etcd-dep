@@ -2,16 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/giantswarm/aws-attach-etcd-dep/disk"
 	"os"
 
 	"github.com/giantswarm/microerror"
 	flag "github.com/spf13/pflag"
 
-	"github.com/giantswarm/aws-attach-etcd-dep/eni"
 	"github.com/giantswarm/aws-attach-etcd-dep/metadata"
 	"github.com/giantswarm/aws-attach-etcd-dep/pkg/project"
-	"github.com/giantswarm/aws-attach-etcd-dep/volume"
 )
 
 type Flag struct {
