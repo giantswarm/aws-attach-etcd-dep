@@ -19,7 +19,7 @@ jobs:
     - persist_to_workspace:
         root: .
         paths:
-        - ./aws-attach-ebs-by-tag
+        - ./aws-attach-etcd-dep
         - ./architect
 
   deploy:
@@ -35,14 +35,10 @@ jobs:
 workflows:
   build_and_push:
     jobs:
-<<<<<<< HEAD
-      - build:
-=======
       - build
->>>>>>> 795e359c17babbe6d151a96198bf602a8dbbfbe2
       - architect/push-to-docker-legacy:
-          name: push-aws-attach-ebs-by-tag-to-aliyun
-          image: "registry-intl.cn-shanghai.aliyuncs.com/giantswarm/aws-attach-ebs-by-tag"
+          name: push-aws-attach-etcd-dep-to-aliyun
+          image: "registry-intl.cn-shanghai.aliyuncs.com/giantswarm/aws-attach-etcd-dep"
           username_envar: "ALIYUN_USERNAME"
           password_envar: "ALIYUN_PASSWORD"
           requires:
