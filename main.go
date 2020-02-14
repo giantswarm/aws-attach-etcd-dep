@@ -9,6 +9,8 @@ import (
 
 	"github.com/giantswarm/aws-attach-etcd-dep/metadata"
 	"github.com/giantswarm/aws-attach-etcd-dep/pkg/project"
+	"github.com/giantswarm/aws-attach-etcd-dep/volume"
+
 )
 
 type Flag struct {
@@ -60,7 +62,7 @@ func mainError() error {
 		return microerror.Mask(err)
 	}
 
-	_, err = metadata.GetInstanceID(awsSession)
+	instanceID, err := metadata.GetInstanceID(awsSession)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -69,8 +71,28 @@ func mainError() error {
 	// TODO, will be added in separate PR
 
 	// attach EBS here
-	// TODO will be added in separate PR
+	var volumeService *volume.Service
+	{
+		attachConfig := volume.Config{
+			AWSInstanceID: instanceID,
+			AwsSession:    awsSession,
+			DeviceName:    f.VolumeDeviceName,
+			ForceDetach:   f.VolumeForceDetach,
+			TagKey:        f.VolumeTagKey,
+			TagValue:      f.VolumeTagValue,
+		}
 
+		volumeService, err = volume.New(attachConfig)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	err = volumeService.AttachEBSByTag()
+
+	if err != nil {
+		return microerror.Mask(err)
+	}
 	// sort out disk fs
 	// TODO will be added in separate PR
 
