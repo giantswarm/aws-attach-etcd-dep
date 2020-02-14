@@ -27,8 +27,8 @@ func New(config Config) (*Service, error) {
 		return nil, microerror.Maskf(invalidConfigError, "config.TagValue must not be empty")
 	}
 
-	newService:=  &Service{
-		deviceName: config.DeviceName,
+	newService := &Service{
+		deviceName:  config.DeviceName,
 		forceDetach: config.ForceDetach,
 		tagKey:      config.TagKey,
 		tagValue:    config.TagValue,

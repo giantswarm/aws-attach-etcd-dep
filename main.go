@@ -2,20 +2,25 @@ package main
 
 import (
 	"fmt"
-	"github.com/giantswarm/aws-attach-ebs-by-tag/attach"
 	"os"
 
 	"github.com/giantswarm/microerror"
 	flag "github.com/spf13/pflag"
 
-	"github.com/giantswarm/aws-attach-ebs-by-tag/pkg/project"
+	"github.com/giantswarm/aws-attach-etcd-dep/metadata"
+	"github.com/giantswarm/aws-attach-etcd-dep/pkg/project"
 )
 
 type Flag struct {
-	DeviceName  string
-	ForceDetach bool
-	TagKey      string
-	TagValue    string
+	EniDeviceIndex     int64
+	EniForceDetach     bool
+	EniTagKey          string
+	EniTagValue        string
+	VolumeDeviceName   string
+	VolumeDeviceFsType string
+	VolumeForceDetach  bool
+	VolumeTagKey       string
+	VolumeTagValue     string
 }
 
 func main() {
@@ -29,10 +34,16 @@ func mainError() error {
 	var err error
 
 	var f Flag
-	flag.StringVar(&f.DeviceName, "device-name", "/dev/xvdh", "Device name that will be used for attaching the EBS volume.")
-	flag.BoolVar(&f.ForceDetach, "force-detach", false, "If set to true, app will use force-detach if the EBS cannot be detached by normal detach operation..")
-	flag.StringVar(&f.TagKey, "tag-key", "my-ebs-tag", "Tag key that will be used to found the requested EBS in AWS API.")
-	flag.StringVar(&f.TagValue, "tag-value", "test", "Tag value that will be used to found the requested EBS in AWS API, this tag should identify one unique in one EBS.")
+	flag.Int64Var(&f.EniDeviceIndex, "eni-device-index", 1, "NIC Device index that will be used for attaching the ENI. Cannot be zeroas that is the default NCI that is already attached.")
+	flag.BoolVar(&f.EniForceDetach, "eni-force-detach", false, "If set to true, app will use force-detach if the ENI cannot be detached by normal detach operation..")
+	flag.StringVar(&f.EniTagKey, "eni-tag-key", "aws-attach-by-id", "Tag key that will be used to found the requested ENI in AWS API.")
+	flag.StringVar(&f.EniTagValue, "eni-tag-value", "test", "Tag value that will be used to found the requested ENI in AWS API, this tag should identify one unique ENI.")
+
+	flag.StringVar(&f.VolumeDeviceName, "volume-device-name", "/dev/xvdh", "Volume device name that will be used for attaching the EBS volume.")
+	flag.StringVar(&f.VolumeDeviceFsType, "volume-device-filesystem-type", "ext4", "In case that the EBS device has no file-system, it will be formatted using this value.")
+	flag.BoolVar(&f.VolumeForceDetach, "volume-force-detach", false, "If set to true, app will use force-detach if the EBS cannot be detached by normal detach operation.")
+	flag.StringVar(&f.VolumeTagKey, "volume-tag-key", "aws-attach-by-id", "Tag key that will be used to found the requested EBS in AWS API.")
+	flag.StringVar(&f.VolumeTagValue, "volume-tag-value", "test", "Tag value that will be used to found the requested EBS in AWS API, this tag should identify one unique EBS.")
 
 	if len(os.Args) > 1 && os.Args[1] == "version" {
 		fmt.Printf("%s:%s - %s", project.Name(), project.Version(), project.GitSHA())
@@ -44,26 +55,24 @@ func mainError() error {
 	}
 	flag.Parse()
 
-	// implementation here
-	var attachService *attach.Service
-	{
-		attachConfig := attach.Config{
-			DeviceName: f.DeviceName,
-			ForceDetach: f.ForceDetach,
-			TagKey:      f.TagKey,
-			TagValue:    f.TagValue,
-		}
-
-		attachService, err = attach.New(attachConfig)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	err = attachService.AttachEBSByTag()
-
+	awsSession, err := getAWSSession()
 	if err != nil {
 		return microerror.Mask(err)
 	}
+
+	_, err = metadata.GetInstanceID(awsSession)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	// attach ENI here
+	// TODO, will be added in separate PR
+
+	// attach EBS here
+	// TODO will be added in separate PR
+
+	// sort out disk fs
+	// TODO will be added in separate PR
+
 	return nil
 }
