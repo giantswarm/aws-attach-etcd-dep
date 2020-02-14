@@ -7,6 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	flag "github.com/spf13/pflag"
 
+	"github.com/giantswarm/aws-attach-etcd-dep/disk"
 	"github.com/giantswarm/aws-attach-etcd-dep/metadata"
 	"github.com/giantswarm/aws-attach-etcd-dep/pkg/project"
 )
@@ -65,14 +66,15 @@ func mainError() error {
 		return microerror.Mask(err)
 	}
 
-	// attach ENI here
-	// TODO, will be added in separate PR
+	// it takes a second or two until kernel register the device under `/dev`
+	err = disk.WaitForDeviceReady(f.VolumeDeviceName)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
-	// attach EBS here
-	// TODO will be added in separate PR
-
-	// sort out disk fs
-	// TODO will be added in separate PR
-
+	err = disk.MaybeCreateDiskFileSystem(f.VolumeDeviceName, f.VolumeDeviceFsType)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 	return nil
 }
