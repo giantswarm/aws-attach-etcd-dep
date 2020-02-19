@@ -111,7 +111,7 @@ func (s *Service) detachEni(ec2Client *ec2.EC2, eni *ec2.NetworkInterface) error
 	}
 	err = backoff.Retry(o, b)
 	if err != nil {
-		fmt.Printf("failed to detach eni after %d retries\n", maxRetries)
+		fmt.Printf("Failed to detach eni after %d retries.\n", maxRetries)
 		return microerror.Mask(err)
 	}
 
