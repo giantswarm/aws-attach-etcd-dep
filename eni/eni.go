@@ -105,7 +105,7 @@ func (s *Service) detachEni(ec2Client *ec2.EC2, eni *ec2.NetworkInterface) error
 
 		if *eni.Status != ec2.NetworkInterfaceStatusAvailable {
 			fmt.Printf("Volume state is '%s', expecting '%s', retrying in %ds.\n", *eni.Status, ec2.NetworkInterfaceStatusAvailable, retryInterval/time.Second)
-			return eniNotDetachedError
+			return microerror.Maskf(executionFailedError, "ENI not detached")
 		}
 		return nil
 	}
