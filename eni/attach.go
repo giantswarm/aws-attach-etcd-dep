@@ -75,7 +75,7 @@ func (s *Service) AttachEniByTag() error {
 			return microerror.Mask(err)
 		}
 	} else {
-		fmt.Printf("ENI state is '%s'.\n", *eni.Status)
+		fmt.Printf("ENI state is %q.\n", *eni.Status)
 	}
 
 	err = s.attachEni(ec2Client, s.awsInstanceID, *eni.NetworkInterfaceId)
