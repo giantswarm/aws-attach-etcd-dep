@@ -80,7 +80,7 @@ func (s *Service) attachEni(ec2Client *ec2.EC2, instanceID string, eniID string)
 		return microerror.Mask(err)
 	}
 
-	fmt.Printf("ENI attached, state '%s' .\n", ec2.NetworkInterfaceStatusInUse)
+	fmt.Printf("ENI attached, state %q .\n", ec2.NetworkInterfaceStatusInUse)
 	return nil
 }
 
