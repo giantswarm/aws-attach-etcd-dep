@@ -68,7 +68,7 @@ func (s *Service) AttachEniByTag() error {
 		fmt.Printf("ENI is already attached to this instance. Nothing to do.\n")
 		return nil
 	} else if *eni.Status == ec2.NetworkInterfaceStatusInUse {
-		fmt.Printf("ENI is attached to '%s' and is in state '%s'. Trying detach the volume\n", *eni.Attachment.InstanceId, *eni.Status)
+		fmt.Printf("ENI is attached to %q and is in state %q. Trying detach the volume\n", *eni.Attachment.InstanceId, *eni.Status)
 
 		err := s.detachEni(ec2Client, eni)
 		if err != nil {
