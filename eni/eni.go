@@ -115,7 +115,7 @@ func (s *Service) detachEni(ec2Client *ec2.EC2, eni *ec2.NetworkInterface) error
 		return microerror.Mask(err)
 	}
 
-	fmt.Printf("ENI detached, state '%s' .\n", ec2.NetworkInterfaceStatusAvailable)
+	fmt.Printf("ENI detached, state %q .\n", ec2.NetworkInterfaceStatusAvailable)
 	return nil
 }
 
