@@ -7,6 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	flag "github.com/spf13/pflag"
 
+	"github.com/giantswarm/aws-attach-etcd-dep/aws"
 	"github.com/giantswarm/aws-attach-etcd-dep/metadata"
 	"github.com/giantswarm/aws-attach-etcd-dep/pkg/project"
 )
@@ -60,14 +61,34 @@ func mainError() error {
 		return microerror.Mask(err)
 	}
 
-	_, err = metadata.GetInstanceID(awsSession)
+	instanceID, err := metadata.GetInstanceID(awsSession)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	// attach ENI here
-	// TODO, will be added in separate PR
+	var eni *aws.ENI
+	{
+		eniConfig := aws.ENIConfig{
+			AWSInstanceID: instanceID,
+			AwsSession:    awsSession,
+			DeviceIndex:   f.EniDeviceIndex,
+			ForceDetach:   f.EniForceDetach,
+			TagKey:        f.EniTagKey,
+			TagValue:      f.EniTagValue,
+		}
 
+		eni, err = aws.NewENI(eniConfig)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	err = eni.AttachByTag()
+
+	if err != nil {
+		return microerror.Mask(err)
+	}
 	// attach EBS here
 	// TODO will be added in separate PR
 
