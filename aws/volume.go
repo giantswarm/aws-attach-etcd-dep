@@ -187,7 +187,7 @@ func (s *EBS) detach(ec2Client *ec2.EC2, volume *ec2.Volume) error {
 	}
 	err = backoff.Retry(o, b)
 	if err != nil {
-		fmt.Printf("failed to detach volume after %d retries\n", maxRetries)
+		fmt.Printf("Failed to detach volume after %d retries.\n", maxRetries)
 		return microerror.Mask(err)
 	}
 
