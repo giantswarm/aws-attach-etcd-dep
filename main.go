@@ -67,7 +67,7 @@ func mainError() error {
 	}
 
 	// attach ENI here
-	var eniService *aws.ENI
+	var eni *aws.ENI
 	{
 		eniConfig := aws.ENIConfig{
 			AWSInstanceID: instanceID,
@@ -78,13 +78,13 @@ func mainError() error {
 			TagValue:      f.EniTagValue,
 		}
 
-		eniService, err = aws.NewENI(eniConfig)
+		eni, err = aws.NewENI(eniConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
-	err = eniService.AttachByTag()
+	err = eni.AttachByTag()
 
 	if err != nil {
 		return microerror.Mask(err)
