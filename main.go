@@ -92,7 +92,6 @@ func mainError() error {
 	// attach EBS here
 	// TODO will be added in separate PR
 
-
 	// it takes a second or two until kernel register the device under `/dev/xxxx`
 	err = disk.WaitForDeviceReady(f.VolumeDeviceName)
 	if err != nil {
