@@ -84,7 +84,7 @@ func mainError() error {
 		}
 	}
 
-	err = eniService.AttachByTag()
+	err = eni.AttachByTag()
 
 	if err != nil {
 		return microerror.Mask(err)
