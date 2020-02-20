@@ -2,6 +2,15 @@ package aws
 
 import "github.com/giantswarm/microerror"
 
-var invalidConfigError = microerror.Newf("invalid config error")
+var executionFailedError = &microerror.Error{
+	Kind: "executionFailedError",
+}
 
-var executionFailedError = microerror.Newf("execution failed error")
+var invalidConfigError = &microerror.Error{
+	Kind: "invalidConfigError",
+}
+
+// IsInvalidConfig asserts invalidConfigError.
+func IsInvalidConfig(err error) bool {
+	return microerror.Cause(err) == invalidConfigError
+}

@@ -94,15 +94,6 @@ func (s *ENI) AttachByTag() error {
 	return nil
 }
 
-func (s *ENI) getID(ec2Client *ec2.EC2) (string, error) {
-	eni, err := s.describe(ec2Client)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	return *eni.NetworkInterfaceId, nil
-}
-
 func (s *ENI) describe(ec2Client *ec2.EC2) (*ec2.NetworkInterface, error) {
 	eniFilter := &ec2.Filter{
 		Name:   tagKey(s.tagKey),
