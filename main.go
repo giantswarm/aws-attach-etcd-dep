@@ -78,7 +78,7 @@ func mainError() error {
 			TagValue:      f.EniTagValue,
 		}
 
-		eniService, err = aws.NewENI(eniConfig)
+		eni, err = aws.NewENI(eniConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
