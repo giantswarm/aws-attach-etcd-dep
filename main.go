@@ -10,7 +10,6 @@ import (
 	"github.com/giantswarm/aws-attach-etcd-dep/aws"
 	"github.com/giantswarm/aws-attach-etcd-dep/metadata"
 	"github.com/giantswarm/aws-attach-etcd-dep/pkg/project"
-	"github.com/giantswarm/aws-attach-etcd-dep/volume"
 )
 
 type Flag struct {
@@ -91,9 +90,9 @@ func mainError() error {
 		return microerror.Mask(err)
 	}
 	// attach EBS here
-	var volumeService *volume.Service
+	var ebs *aws.EBS
 	{
-		attachConfig := volume.Config{
+		ebsConfig := aws.EBSConfig{
 			AWSInstanceID: instanceID,
 			AwsSession:    awsSession,
 			DeviceName:    f.VolumeDeviceName,
@@ -102,13 +101,13 @@ func mainError() error {
 			TagValue:      f.VolumeTagValue,
 		}
 
-		volumeService, err = volume.New(attachConfig)
+		ebs, err = aws.NewEBS(ebsConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
-	err = volumeService.AttachEBSByTag()
+	err = ebs.AttachByTag()
 
 	if err != nil {
 		return microerror.Mask(err)

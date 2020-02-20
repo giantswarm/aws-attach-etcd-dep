@@ -11,11 +11,6 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
-const (
-	maxRetries    = 15
-	retryInterval = time.Second * 10
-)
-
 type ENIConfig struct {
 	AWSInstanceID string
 	AwsSession    *session.Session
@@ -186,12 +181,4 @@ func (s *ENI) detach(ec2Client *ec2.EC2, eni *ec2.NetworkInterface) error {
 
 	fmt.Printf("ENI detached, state %q .\n", ec2.NetworkInterfaceStatusAvailable)
 	return nil
-}
-
-func tagKey(input string) *string {
-	return aws.String(fmt.Sprintf("tag:%s", input))
-}
-
-func tagValue(input string) []*string {
-	return []*string{aws.String(input)}
 }
