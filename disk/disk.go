@@ -25,14 +25,14 @@ func WaitForDeviceReady(deviceName string) error {
 	o := func() error {
 		_, err := os.Stat(deviceName)
 		if os.IsNotExist(err) {
-			fmt.Printf("Waiting until device '%s' is registered by kernel.\n", deviceName)
+			fmt.Printf("Waiting until device %q is registered by kernel.\n", deviceName)
 			return err
 		}
 		return nil
 	}
 	err := backoff.Retry(o, b)
 	if err != nil {
-		fmt.Printf("wait limit exceeded for device '%s' after %d retries\n", deviceName, maxRetries)
+		fmt.Printf("wait limit exceeded for device %q after %d retries\n", deviceName, maxRetries)
 		return microerror.Mask(err)
 	}
 	return nil
@@ -50,7 +50,7 @@ func MaybeCreateDiskFileSystem(deviceName string, desiredFsType string) error {
 			return microerror.Mask(err)
 		}
 	} else {
-		fmt.Printf("Block device '%s' has already file-system '%s'.\n", deviceName, desiredFsType)
+		fmt.Printf("Block device %q has already file-system %q.\n", deviceName, desiredFsType)
 	}
 	return nil
 }
@@ -76,7 +76,7 @@ func runMkfs(deviceName string, fsType string) error {
 		}
 	}
 	if !supported {
-		return microerror.Maskf(executionFailedError, fmt.Sprintf("fsType '%s' is not supported", fsType))
+		return microerror.Maskf(executionFailedError, fmt.Sprintf("fsType %q is not supported", fsType))
 	}
 
 	cmd := exec.Command("/sbin/mkfs", "-t", fsType, "-L", diskLabel, deviceName)
