@@ -2,6 +2,6 @@ package aws
 
 import "github.com/giantswarm/microerror"
 
-var invalidConfigError = microerror.New("invalid config error")
+var invalidConfigError = microerror.Newf("invalid config error")
 
-var executionFailedError = microerror.New("execution failed error")
+var executionFailedError = microerror.Newf("execution failed error")

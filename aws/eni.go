@@ -16,7 +16,6 @@ const (
 	retryInterval = time.Second * 10
 )
 
-
 type ENIConfig struct {
 	AWSInstanceID string
 	AwsSession    *session.Session
@@ -78,14 +77,14 @@ func (s *ENI) AttachByTag() error {
 		fmt.Printf("ENI is already attached to this instance. Nothing to do.\n")
 		return nil
 	} else if *eni.Status == ec2.NetworkInterfaceStatusInUse {
-		fmt.Printf("ENI is attached to '%s' and is in state '%s'. Trying detach the volume\n", *eni.Attachment.InstanceId, *eni.Status)
+		fmt.Printf("ENI is attached to %q and is in state %q. Trying detach the volume\n", *eni.Attachment.InstanceId, *eni.Status)
 
 		err := s.detach(ec2Client, eni)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	} else {
-		fmt.Printf("ENI state is '%s'.\n", *eni.Status)
+		fmt.Printf("ENI state is %q.\n", *eni.Status)
 	}
 
 	err = s.attach(ec2Client, s.awsInstanceID, *eni.NetworkInterfaceId)
@@ -148,18 +147,18 @@ func (s *ENI) attach(ec2Client *ec2.EC2, instanceID string, eniID string) error 
 		}
 
 		if *eni.Status != ec2.NetworkInterfaceStatusInUse && *eni.Attachment.InstanceId == instanceID {
-			fmt.Printf("Volume state is '%s', expecting '%s', retrying in %ds.\n", *eni.Status, ec2.NetworkInterfaceStatusInUse, retryInterval/time.Second)
-			return eniNotAttachedError
+			fmt.Printf("Volume state is %q, expecting %q, retrying in %ds.\n", *eni.Status, ec2.NetworkInterfaceStatusInUse, retryInterval/time.Second)
+			return microerror.Maskf(executionFailedError, "ENI not attached")
 		}
 		return nil
 	}
 	err = backoff.Retry(o, b)
 	if err != nil {
-		fmt.Printf("failed to attach eni after %d retries\n", maxRetries)
+		fmt.Printf("Failed to attach eni after %d retries.\n", maxRetries)
 		return microerror.Mask(err)
 	}
 
-	fmt.Printf("ENI attached, state '%s' .\n", ec2.NetworkInterfaceStatusInUse)
+	fmt.Printf("ENI attached, state %q .\n", ec2.NetworkInterfaceStatusInUse)
 	return nil
 }
 
@@ -183,18 +182,18 @@ func (s *ENI) detach(ec2Client *ec2.EC2, eni *ec2.NetworkInterface) error {
 		}
 
 		if *eni.Status != ec2.NetworkInterfaceStatusAvailable {
-			fmt.Printf("Volume state is '%s', expecting '%s', retrying in %ds.\n", *eni.Status, ec2.NetworkInterfaceStatusAvailable, retryInterval/time.Second)
-			return eniNotDetachedError
+			fmt.Printf("Volume state is %q, expecting %q, retrying in %s.\n", *eni.Status, ec2.NetworkInterfaceStatusAvailable, retryInterval)
+			return microerror.Maskf(executionFailedError, "ENI not detached")
 		}
 		return nil
 	}
 	err = backoff.Retry(o, b)
 	if err != nil {
-		fmt.Printf("failed to detach eni after %d retries\n", maxRetries)
+		fmt.Printf("Failed to detach eni after %d retries.\n", maxRetries)
 		return microerror.Mask(err)
 	}
 
-	fmt.Printf("ENI detached, state '%s' .\n", ec2.NetworkInterfaceStatusAvailable)
+	fmt.Printf("ENI detached, state %q .\n", ec2.NetworkInterfaceStatusAvailable)
 	return nil
 }
 
