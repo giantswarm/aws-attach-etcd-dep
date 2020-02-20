@@ -67,7 +67,7 @@ func mainError() error {
 	}
 
 	// attach ENI here
-	var eniService *aws.ENI
+	var eni *aws.ENI
 	{
 		eniConfig := aws.ENIConfig{
 			AWSInstanceID: instanceID,
