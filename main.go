@@ -90,8 +90,28 @@ func mainError() error {
 		return microerror.Mask(err)
 	}
 	// attach EBS here
-	// TODO will be added in separate PR
+	var ebs *aws.EBS
+	{
+		ebsConfig := aws.EBSConfig{
+			AWSInstanceID: instanceID,
+			AwsSession:    awsSession,
+			DeviceName:    f.VolumeDeviceName,
+			ForceDetach:   f.VolumeForceDetach,
+			TagKey:        f.VolumeTagKey,
+			TagValue:      f.VolumeTagValue,
+		}
 
+		ebs, err = aws.NewEBS(ebsConfig)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	err = ebs.AttachByTag()
+
+	if err != nil {
+		return microerror.Mask(err)
+	}
 	// sort out disk fs
 	// TODO will be added in separate PR
 
