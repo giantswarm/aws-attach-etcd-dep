@@ -150,7 +150,7 @@ func (s *EBS) attach(ec2Client *ec2.EC2, instanceID string, volumeID string) err
 	}
 	err = backoff.Retry(o, b)
 	if err != nil {
-		fmt.Printf("failed to attach volume after %d retries\n", maxRetries)
+		fmt.Printf("Failed to attach volume after %d retries.\n", maxRetries)
 		return microerror.Mask(err)
 	}
 
