@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	flag "github.com/spf13/pflag"
 
-	"github.com/giantswarm/aws-attach-etcd-dep/eni"
+	"github.com/giantswarm/aws-attach-etcd-dep/aws"
 	"github.com/giantswarm/aws-attach-etcd-dep/metadata"
 	"github.com/giantswarm/aws-attach-etcd-dep/pkg/project"
 )
@@ -67,9 +67,9 @@ func mainError() error {
 	}
 
 	// attach ENI here
-	var eniService *eni.Service
+	var eniService *aws.ENI
 	{
-		eniConfig := eni.Config{
+		eniConfig := aws.ENIConfig{
 			AWSInstanceID: instanceID,
 			AwsSession:    awsSession,
 			DeviceIndex:   f.EniDeviceIndex,
@@ -78,13 +78,13 @@ func mainError() error {
 			TagValue:      f.EniTagValue,
 		}
 
-		eniService, err = eni.New(eniConfig)
+		eniService, err = aws.NewENI(eniConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
-	err = eniService.AttachEniByTag()
+	err = eniService.AttachByTag()
 
 	if err != nil {
 		return microerror.Mask(err)

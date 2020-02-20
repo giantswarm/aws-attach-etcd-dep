@@ -1,12 +1,12 @@
-package eni
+package aws
 
 import (
 	"fmt"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
 )
@@ -16,8 +16,87 @@ const (
 	retryInterval = time.Second * 10
 )
 
-func (s *Service) getEniID(ec2Client *ec2.EC2) (string, error) {
-	eni, err := s.describeEni(ec2Client)
+
+type ENIConfig struct {
+	AWSInstanceID string
+	AwsSession    *session.Session
+	DeviceIndex   int64
+	ForceDetach   bool
+	TagKey        string
+	TagValue      string
+}
+
+type ENI struct {
+	awsInstanceID string
+	awsSession    *session.Session
+	deviceIndex   int64
+	forceDetach   bool
+	tagKey        string
+	tagValue      string
+}
+
+func NewENI(config ENIConfig) (*ENI, error) {
+	if config.AWSInstanceID == "" {
+		return nil, microerror.Maskf(invalidConfigError, "config.AWSInstanceID must not be empty")
+	}
+	if config.AwsSession == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.AwsSession must not be nil")
+	}
+	if config.DeviceIndex == 0 {
+		return nil, microerror.Maskf(invalidConfigError, "config.DeviceIndex must not be 0")
+	}
+	if config.TagKey == "" {
+		return nil, microerror.Maskf(invalidConfigError, "config.TagKey must not be empty")
+	}
+	if config.TagValue == "" {
+		return nil, microerror.Maskf(invalidConfigError, "config.TagValue must not be empty")
+	}
+
+	newENI := &ENI{
+		awsInstanceID: config.AWSInstanceID,
+		awsSession:    config.AwsSession,
+		deviceIndex:   config.DeviceIndex,
+		forceDetach:   config.ForceDetach,
+		tagKey:        config.TagKey,
+		tagValue:      config.TagValue,
+	}
+	return newENI, nil
+}
+
+func (s *ENI) AttachByTag() error {
+	// create ec2 client
+	ec2Client := ec2.New(s.awsSession)
+
+	eni, err := s.describe(ec2Client)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	fmt.Printf("Fetched eni-id '%s'\n", *eni.NetworkInterfaceId)
+
+	if *eni.Status == ec2.NetworkInterfaceStatusInUse &&
+		*eni.Attachment.InstanceId == s.awsInstanceID {
+		fmt.Printf("ENI is already attached to this instance. Nothing to do.\n")
+		return nil
+	} else if *eni.Status == ec2.NetworkInterfaceStatusInUse {
+		fmt.Printf("ENI is attached to '%s' and is in state '%s'. Trying detach the volume\n", *eni.Attachment.InstanceId, *eni.Status)
+
+		err := s.detach(ec2Client, eni)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	} else {
+		fmt.Printf("ENI state is '%s'.\n", *eni.Status)
+	}
+
+	err = s.attach(ec2Client, s.awsInstanceID, *eni.NetworkInterfaceId)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	return nil
+}
+
+func (s *ENI) getID(ec2Client *ec2.EC2) (string, error) {
+	eni, err := s.describe(ec2Client)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -25,7 +104,7 @@ func (s *Service) getEniID(ec2Client *ec2.EC2) (string, error) {
 	return *eni.NetworkInterfaceId, nil
 }
 
-func (s *Service) describeEni(ec2Client *ec2.EC2) (*ec2.NetworkInterface, error) {
+func (s *ENI) describe(ec2Client *ec2.EC2) (*ec2.NetworkInterface, error) {
 	eniFilter := &ec2.Filter{
 		Name:   tagKey(s.tagKey),
 		Values: tagValue(s.tagValue),
@@ -49,7 +128,7 @@ func (s *Service) describeEni(ec2Client *ec2.EC2) (*ec2.NetworkInterface, error)
 	return o.NetworkInterfaces[0], nil
 }
 
-func (s *Service) attachEni(ec2Client *ec2.EC2, instanceID string, eniID string) error {
+func (s *ENI) attach(ec2Client *ec2.EC2, instanceID string, eniID string) error {
 	attachNetworkInterfaceInput := &ec2.AttachNetworkInterfaceInput{
 		DeviceIndex:        aws.Int64(s.deviceIndex),
 		InstanceId:         aws.String(instanceID),
@@ -63,7 +142,7 @@ func (s *Service) attachEni(ec2Client *ec2.EC2, instanceID string, eniID string)
 
 	b := backoff.NewMaxRetries(maxRetries, retryInterval)
 	o := func() error {
-		eni, err := s.describeEni(ec2Client)
+		eni, err := s.describe(ec2Client)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -84,7 +163,7 @@ func (s *Service) attachEni(ec2Client *ec2.EC2, instanceID string, eniID string)
 	return nil
 }
 
-func (s *Service) detachEni(ec2Client *ec2.EC2, eni *ec2.NetworkInterface) error {
+func (s *ENI) detach(ec2Client *ec2.EC2, eni *ec2.NetworkInterface) error {
 	detachNetworkInterfaceInput := &ec2.DetachNetworkInterfaceInput{
 		AttachmentId: eni.Attachment.AttachmentId,
 		Force:        aws.Bool(s.forceDetach),
@@ -98,7 +177,7 @@ func (s *Service) detachEni(ec2Client *ec2.EC2, eni *ec2.NetworkInterface) error
 
 	b := backoff.NewMaxRetries(maxRetries, retryInterval)
 	o := func() error {
-		eni, err := s.describeEni(ec2Client)
+		eni, err := s.describe(ec2Client)
 		if err != nil {
 			return microerror.Mask(err)
 		}
