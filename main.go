@@ -111,7 +111,7 @@ func mainError() error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-  
+
 	// it takes a second or two until kernel register the device under `/dev/xxxx`
 	err = disk.WaitForDeviceReady(f.VolumeDeviceName)
 	if err != nil {
