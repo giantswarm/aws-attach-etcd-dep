@@ -85,6 +85,6 @@ func runMkfs(deviceName string, fsType string) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	fmt.Printf("Device '%s' was formated as '%s'\n", deviceName, fsType)
+	fmt.Printf("Device '%s' was formatted as '%s'\n", deviceName, fsType)
 	return nil
 }
