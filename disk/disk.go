@@ -38,7 +38,7 @@ func WaitForDeviceReady(deviceName string) error {
 	return nil
 }
 
-func MaybeCreateDiskFileSystem(deviceName string, desiredFsType string) error {
+func EnsureDiskHasFileSystem(deviceName string, desiredFsType string) error {
 	deviceFsType, err := getFsType(deviceName)
 	if err != nil {
 		return microerror.Mask(err)
