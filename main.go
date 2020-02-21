@@ -97,7 +97,7 @@ func mainError() error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	err = disk.MaybeCreateDiskFileSystem(f.VolumeDeviceName, f.VolumeDeviceFsType)
+	err = disk.EnsureDiskHasFileSystem(f.VolumeDeviceName, f.VolumeDeviceFsType)
 	if err != nil {
 		return microerror.Mask(err)
 	}
