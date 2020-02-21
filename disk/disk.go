@@ -50,7 +50,7 @@ func EnsureDiskHasFileSystem(deviceName string, desiredFsType string) error {
 			return microerror.Mask(err)
 		}
 	} else if deviceFsType != desiredFsType {
-		return microerror.Maskf(executionFailedError, fmt.Sprintf("Block device has unexpeted fs type %q.", deviceFsType))
+		return microerror.Maskf(executionFailedError, fmt.Sprintf("Block device has unexpected fs type %q.", deviceFsType))
 	} else {
 		fmt.Printf("Block device %q has already file-system %q.\n", deviceName, desiredFsType)
 	}
