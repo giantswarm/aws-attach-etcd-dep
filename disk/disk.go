@@ -13,7 +13,6 @@ import (
 )
 
 const (
-	diskLabel     = "var-lib-etcd"
 	maxRetries    = 15
 	retryInterval = time.Second * 10
 )
@@ -38,14 +37,14 @@ func WaitForDeviceReady(deviceName string) error {
 	return nil
 }
 
-func EnsureDiskHasFileSystem(deviceName string, desiredFsType string) error {
+func EnsureDiskHasFileSystem(deviceName string, desiredFsType string, desiredLabel string) error {
 	deviceFsType, err := getFsType(deviceName)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 	if deviceFsType == "" {
 		// format disk
-		err = runMkfs(deviceName, desiredFsType)
+		err = runMkfs(deviceName, desiredFsType, desiredLabel)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -69,7 +68,7 @@ func getFsType(deviceName string) (string, error) {
 	return strings.TrimSpace(out.String()), nil
 }
 
-func runMkfs(deviceName string, fsType string) error {
+func runMkfs(deviceName string, fsType string, label string) error {
 	supported := false
 	for _, i := range supportedFsType {
 		if i == fsType {
@@ -81,7 +80,7 @@ func runMkfs(deviceName string, fsType string) error {
 		return microerror.Maskf(executionFailedError, fmt.Sprintf("fsType %q is not supported", fsType))
 	}
 
-	cmd := exec.Command("/sbin/mkfs", "-t", fsType, "-L", diskLabel, deviceName)
+	cmd := exec.Command("/sbin/mkfs", "-t", fsType, "-L", label, deviceName)
 	err := cmd.Run()
 
 	if err != nil {
