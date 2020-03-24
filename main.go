@@ -20,6 +20,7 @@ type Flag struct {
 	EniTagValue        string
 	VolumeDeviceName   string
 	VolumeDeviceFsType string
+	VolumeDeviceLabel  string
 	VolumeForceDetach  bool
 	VolumeTagKey       string
 	VolumeTagValue     string
@@ -43,6 +44,7 @@ func mainError() error {
 
 	flag.StringVar(&f.VolumeDeviceName, "volume-device-name", "/dev/xvdh", "Volume device name that will be used for attaching the EBS volume.")
 	flag.StringVar(&f.VolumeDeviceFsType, "volume-device-filesystem-type", "ext4", "In case that the EBS device has no file-system, it will be formatted using this value.")
+	flag.StringVar(&f.VolumeDeviceLabel, "volume-device-label", "var-lib-etcd", "In case that the EBS device has no file-system, it will be formatted  with this label.")
 	flag.BoolVar(&f.VolumeForceDetach, "volume-force-detach", false, "If set to true, app will use force-detach if the EBS cannot be detached by normal detach operation.")
 	flag.StringVar(&f.VolumeTagKey, "volume-tag-key", "aws-attach-by-id", "Tag key that will be used to found the requested EBS in AWS API.")
 	flag.StringVar(&f.VolumeTagValue, "volume-tag-value", "test", "Tag value that will be used to found the requested EBS in AWS API, this tag should identify one unique EBS.")
@@ -117,7 +119,7 @@ func mainError() error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	err = disk.EnsureDiskHasFileSystem(f.VolumeDeviceName, f.VolumeDeviceFsType)
+	err = disk.EnsureDiskHasFileSystem(f.VolumeDeviceName, f.VolumeDeviceFsType, f.VolumeDeviceLabel)
 	if err != nil {
 		return microerror.Mask(err)
 	}
