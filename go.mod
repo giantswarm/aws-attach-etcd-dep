@@ -11,7 +11,7 @@ require (
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/giantswarm/backoff v0.0.0-20190913091243-4dd491125192
 	github.com/giantswarm/k8scloudconfig v0.0.0-20200130205444-201778b01f0d // indirect
-	github.com/giantswarm/microerror v0.1.0
+	github.com/giantswarm/microerror v0.2.0
 	github.com/giantswarm/micrologger v0.0.0-20191014091141-d866337f7393 // indirect
 	github.com/giantswarm/terraform-provider-gotemplate v0.0.0-20191009174139-d4414cf750ee // indirect
 	github.com/go-kit/kit v0.9.0 // indirect

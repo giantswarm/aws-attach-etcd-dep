@@ -118,6 +118,8 @@ github.com/giantswarm/k8scloudconfig v0.0.0-20200130205444-201778b01f0d h1:Q6KAz
 github.com/giantswarm/k8scloudconfig v0.0.0-20200130205444-201778b01f0d/go.mod h1:86G0sEYkkyU9a1IMweD6P7yJRDcTtXTGQYLe3FlFjzA=
 github.com/giantswarm/microerror v0.1.0 h1:kQ38fLkFk3tz08Hltu6G52bTKW4vxCvp4sW5iQ7K4oI=
 github.com/giantswarm/microerror v0.1.0/go.mod h1://Lo9dKJ8P2TBciuky5fDHEItccyvZOWE+B/0JiJT8A=
+github.com/giantswarm/microerror v0.2.0 h1:SaE7S34mp/wEiQkgtPiq8wQbNUTCj1gjiCWPjO3wgJo=
+github.com/giantswarm/microerror v0.2.0/go.mod h1:1YtJq/m7Vlq1Y6NP7B+SODOKCGlG7e5wctV2OoE9n34=
 github.com/giantswarm/micrologger v0.0.0-20191014091141-d866337f7393 h1:iwdDYJLDPkWo71fPO57Q40qNsjpXlH/KNznqgByo0xA=
 github.com/giantswarm/micrologger v0.0.0-20191014091141-d866337f7393/go.mod h1:2O9GG1AfKI8px8oseWx+TTD6A6aEdUo16ZjAKv2wOVk=
 github.com/giantswarm/terraform-provider-gotemplate v0.0.0-20191009174139-d4414cf750ee h1:1fWIo16hrVvs0ECytnTfOpa1zKU45IjyKx9CEEa9Rlw=
