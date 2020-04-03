@@ -5,7 +5,7 @@ go 1.13
 require (
 	cloud.google.com/go v0.52.0 // indirect
 	cloud.google.com/go/storage v1.5.0 // indirect
-	github.com/aws/aws-sdk-go v1.28.11
+	github.com/aws/aws-sdk-go v1.30.3
 	github.com/bmatcuk/doublestar v1.2.2 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/fatih/color v1.9.0 // indirect
