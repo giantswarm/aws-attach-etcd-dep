@@ -74,12 +74,13 @@ func mainError() error {
 	var eni *aws.ENI
 	{
 		eniConfig := aws.ENIConfig{
-			AWSInstanceID: instanceID,
-			AwsSession:    awsSession,
-			DeviceIndex:   f.EniDeviceIndex,
-			ForceDetach:   f.EniForceDetach,
-			TagKey:        f.EniTagKey,
-			TagValue:      f.EniTagValue,
+			AWSInstanceID:    instanceID,
+			AwsSession:       awsSession,
+			DeviceIndex:      f.EniDeviceIndex,
+			ConfigureRouting: f.EniConfigureRouting,
+			ForceDetach:      f.EniForceDetach,
+			TagKey:           f.EniTagKey,
+			TagValue:         f.EniTagValue,
 		}
 
 		eni, err = aws.NewENI(eniConfig)
