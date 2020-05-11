@@ -42,11 +42,11 @@ func ConfigureNetworkRoutingForENI(eniIP string, eniSubnet *net.IPNet) error {
 	return nil
 }
 
-func renderRoutingNetworkdFile(params Params) error {
+func renderRoutingNetworkdFile(p params) error {
 	var buff bytes.Buffer
 	t := template.Must(template.New("routing").Parse(networkRoutingTemplate))
 
-	err := t.Execute(&buff, params)
+	err := t.Execute(&buff, p)
 	if err != nil {
 		return microerror.Mask(err)
 	}
