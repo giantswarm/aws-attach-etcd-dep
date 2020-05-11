@@ -14,16 +14,17 @@ import (
 )
 
 type Flag struct {
-	EniDeviceIndex     int64
-	EniForceDetach     bool
-	EniTagKey          string
-	EniTagValue        string
-	VolumeDeviceName   string
-	VolumeDeviceFsType string
-	VolumeDeviceLabel  string
-	VolumeForceDetach  bool
-	VolumeTagKey       string
-	VolumeTagValue     string
+	EniConfigureRouting bool
+	EniDeviceIndex      int64
+	EniForceDetach      bool
+	EniTagKey           string
+	EniTagValue         string
+	VolumeDeviceName    string
+	VolumeDeviceFsType  string
+	VolumeDeviceLabel   string
+	VolumeForceDetach   bool
+	VolumeTagKey        string
+	VolumeTagValue      string
 }
 
 func main() {
@@ -37,6 +38,7 @@ func mainError() error {
 	var err error
 
 	var f Flag
+	flag.BoolVar(&f.EniForceDetach, "eni-configure-routing", false, "If set to true, app will use also setup routing for eni to prevent asymetric routing.")
 	flag.Int64Var(&f.EniDeviceIndex, "eni-device-index", 1, "NIC Device index that will be used for attaching the ENI. Cannot be zeroas that is the default NCI that is already attached.")
 	flag.BoolVar(&f.EniForceDetach, "eni-force-detach", false, "If set to true, app will use force-detach if the ENI cannot be detached by normal detach operation..")
 	flag.StringVar(&f.EniTagKey, "eni-tag-key", "aws-attach-by-id", "Tag key that will be used to found the requested ENI in AWS API.")

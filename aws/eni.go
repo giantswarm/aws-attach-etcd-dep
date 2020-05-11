@@ -2,6 +2,8 @@ package aws
 
 import (
 	"fmt"
+	"github.com/giantswarm/aws-attach-etcd-dep/routing"
+	"net"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -12,21 +14,23 @@ import (
 )
 
 type ENIConfig struct {
-	AWSInstanceID string
-	AwsSession    *session.Session
-	DeviceIndex   int64
-	ForceDetach   bool
-	TagKey        string
-	TagValue      string
+	AWSInstanceID    string
+	AwsSession       *session.Session
+	ConfigureRouting bool
+	DeviceIndex      int64
+	ForceDetach      bool
+	TagKey           string
+	TagValue         string
 }
 
 type ENI struct {
-	awsInstanceID string
-	awsSession    *session.Session
-	deviceIndex   int64
-	forceDetach   bool
-	tagKey        string
-	tagValue      string
+	awsInstanceID    string
+	awsSession       *session.Session
+	configureRouting bool
+	deviceIndex      int64
+	forceDetach      bool
+	tagKey           string
+	tagValue         string
 }
 
 func NewENI(config ENIConfig) (*ENI, error) {
@@ -47,12 +51,13 @@ func NewENI(config ENIConfig) (*ENI, error) {
 	}
 
 	newENI := &ENI{
-		awsInstanceID: config.AWSInstanceID,
-		awsSession:    config.AwsSession,
-		deviceIndex:   config.DeviceIndex,
-		forceDetach:   config.ForceDetach,
-		tagKey:        config.TagKey,
-		tagValue:      config.TagValue,
+		awsInstanceID:    config.AWSInstanceID,
+		awsSession:       config.AwsSession,
+		deviceIndex:      config.DeviceIndex,
+		configureRouting: config.ConfigureRouting,
+		forceDetach:      config.ForceDetach,
+		tagKey:           config.TagKey,
+		tagValue:         config.TagValue,
 	}
 	return newENI, nil
 }
@@ -85,6 +90,23 @@ func (s *ENI) AttachByTag() error {
 	err = s.attach(ec2Client, s.awsInstanceID, *eni.NetworkInterfaceId)
 	if err != nil {
 		return microerror.Mask(err)
+	}
+
+	if s.configureRouting {
+		awsEniSubnet, err := s.describeSubnet(ec2Client, *eni.SubnetId)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		_, ipNet, err := net.ParseCIDR(*awsEniSubnet.CidrBlock)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		err = routing.ConfigureNetworkRoutingForENI(*eni.PrivateIpAddress, ipNet)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 	return nil
 }
@@ -181,4 +203,21 @@ func (s *ENI) detach(ec2Client *ec2.EC2, eni *ec2.NetworkInterface) error {
 
 	fmt.Printf("ENI detached, state %q .\n", ec2.NetworkInterfaceStatusAvailable)
 	return nil
+}
+
+func (s *ENI) describeSubnet(ec2Client *ec2.EC2, subnetID string) (*ec2.Subnet, error) {
+	describeSubnetInput := &ec2.DescribeSubnetsInput{
+		SubnetIds: []*string{aws.String(subnetID)},
+	}
+	o, err := ec2Client.DescribeSubnets(describeSubnetInput)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	// id should give us only one unique subnet
+	if len(o.Subnets) != 1 {
+		return nil, microerror.Maskf(executionFailedError, "expected 1 eni but got %d instead", len(o.Subnets))
+	}
+
+	return o.Subnets[0], nil
 }
