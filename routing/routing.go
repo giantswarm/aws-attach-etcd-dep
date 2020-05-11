@@ -16,7 +16,7 @@ const (
 	eth1FileName = "/etc/systemd/network/10-eth1.network"
 )
 
-type Params struct {
+type params struct {
 	ENIAddress    string
 	ENIGateway    string
 	ENISubnetSize int
