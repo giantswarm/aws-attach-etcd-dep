@@ -2,10 +2,8 @@ package routing
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"net"
-	"os/exec"
 	"text/template"
 
 	"github.com/giantswarm/microerror"
@@ -34,10 +32,6 @@ func ConfigureNetworkRoutingForENI(eniIP string, eniSubnet *net.IPNet) error {
 		return microerror.Mask(err)
 	}
 
-	err = restartNetworkd()
-	if err != nil {
-		return microerror.Mask(err)
-	}
 	return nil
 }
 
@@ -53,22 +47,6 @@ func renderRoutingNetworkdFile(p params) error {
 	err = ioutil.WriteFile(eth1FileName, buff.Bytes(), 0644)
 	if err != nil {
 		return microerror.Mask(err)
-	}
-
-	return nil
-}
-
-func restartNetworkd() error {
-	cmdReload := exec.Command("/usr/bin/systemctl", "daemon-reload")
-	out, err := cmdReload.CombinedOutput()
-	if err != nil {
-		return microerror.Maskf(executionFailedError, fmt.Sprintf("failed to reload daemon for systemd with error %#q and output %#q", err, out))
-	}
-
-	cmdRestart := exec.Command("/usr/bin/systemctl", "restart", "systemd-networkd")
-	out, err = cmdRestart.CombinedOutput()
-	if err != nil {
-		return microerror.Maskf(executionFailedError, fmt.Sprintf("failed to restart systemd-networkd with error %#q and output %#q", err, out))
 	}
 
 	return nil
