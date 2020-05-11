@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
-	"os"
 	"os/exec"
 	"text/template"
 
@@ -51,7 +50,7 @@ func renderRoutingNetworkdFile(params Params) error {
 		return microerror.Mask(err)
 	}
 
-	err = ioutil.WriteFile(eth1FileName, buff.Bytes(), os.ModeAppend)
+	err = ioutil.WriteFile(eth1FileName, buff.Bytes(), 0644)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -61,15 +60,15 @@ func renderRoutingNetworkdFile(params Params) error {
 
 func restartNetworkd() error {
 	cmdReload := exec.Command("/usr/bin/systemctl", "daemon-reload")
-	err := cmdReload.Run()
+	out, err := cmdReload.CombinedOutput()
 	if err != nil {
-		return microerror.Maskf(err, fmt.Sprintf("failed to reload daemon for systemd: %s", err))
+		return microerror.Maskf(err, fmt.Sprintf("failed to reload daemon for systemd: %s", out))
 	}
 
 	cmdRestart := exec.Command("/usr/bin/systemctl", "restart", "systemd-networkd")
-	err = cmdRestart.Run()
+	out, err = cmdRestart.CombinedOutput()
 	if err != nil {
-		return microerror.Maskf(err, fmt.Sprintf("failed to restart systemd-networkd: %s", err))
+		return microerror.Maskf(err, fmt.Sprintf("failed to restart systemd-networkd: %s", out))
 	}
 
 	return nil
