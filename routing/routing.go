@@ -15,7 +15,7 @@ const (
 	eth1FileName = "/etc/systemd/network/10-eth1.network"
 )
 
-type Params struct {
+type params struct {
 	ENIAddress    string
 	ENIGateway    string
 	ENISubnetSize int
@@ -23,13 +23,13 @@ type Params struct {
 
 func ConfigureNetworkRoutingForENI(eniIP string, eniSubnet *net.IPNet) error {
 
-	params := Params{
+	p := params{
 		ENIAddress:    eniIP,
 		ENIGateway:    eniGateway(eniSubnet),
 		ENISubnetSize: eniSubnetSize(eniSubnet),
 	}
 
-	err := renderRoutingNetworkdFile(params)
+	err := renderRoutingNetworkdFile(p)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -41,11 +41,11 @@ func ConfigureNetworkRoutingForENI(eniIP string, eniSubnet *net.IPNet) error {
 	return nil
 }
 
-func renderRoutingNetworkdFile(params Params) error {
+func renderRoutingNetworkdFile(p params) error {
 	var buff bytes.Buffer
 	t := template.Must(template.New("routing").Parse(networkRoutingTemplate))
 
-	err := t.Execute(&buff, params)
+	err := t.Execute(&buff, p)
 	if err != nil {
 		return microerror.Mask(err)
 	}
