@@ -15,13 +15,12 @@ import (
 )
 
 type ENIConfig struct {
-	AWSInstanceID    string
-	AwsSession       *session.Session
-	ConfigureRouting bool
-	DeviceIndex      int64
-	ForceDetach      bool
-	TagKey           string
-	TagValue         string
+	AWSInstanceID string
+	AwsSession    *session.Session
+	DeviceIndex   int64
+	ForceDetach   bool
+	TagKey        string
+	TagValue      string
 }
 
 type ENI struct {
@@ -52,13 +51,12 @@ func NewENI(config ENIConfig) (*ENI, error) {
 	}
 
 	newENI := &ENI{
-		awsInstanceID:    config.AWSInstanceID,
-		awsSession:       config.AwsSession,
-		deviceIndex:      config.DeviceIndex,
-		configureRouting: config.ConfigureRouting,
-		forceDetach:      config.ForceDetach,
-		tagKey:           config.TagKey,
-		tagValue:         config.TagValue,
+		awsInstanceID: config.AWSInstanceID,
+		awsSession:    config.AwsSession,
+		deviceIndex:   config.DeviceIndex,
+		forceDetach:   config.ForceDetach,
+		tagKey:        config.TagKey,
+		tagValue:      config.TagValue,
 	}
 	return newENI, nil
 }
@@ -93,23 +91,21 @@ func (s *ENI) AttachByTag() error {
 		return microerror.Mask(err)
 	}
 
-	if s.configureRouting {
-		awsEniSubnet, err := s.describeSubnet(ec2Client, *eni.SubnetId)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		_, ipNet, err := net.ParseCIDR(*awsEniSubnet.CidrBlock)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		err = routing.ConfigureNetworkRoutingForENI(*eni.PrivateIpAddress, ipNet)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		fmt.Sprintf("Sucesfully configured routing for eth1  for ip %s.\n", *eni.PrivateIpAddress)
+	awsEniSubnet, err := s.describeSubnet(ec2Client, *eni.SubnetId)
+	if err != nil {
+		return microerror.Mask(err)
 	}
+
+	_, ipNet, err := net.ParseCIDR(*awsEniSubnet.CidrBlock)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = routing.ConfigureNetworkRoutingForENI(*eni.PrivateIpAddress, ipNet)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	fmt.Sprintf("Sucesfully configured routing for eth1  for ip %s.\n", *eni.PrivateIpAddress)
 	return nil
 }
 
