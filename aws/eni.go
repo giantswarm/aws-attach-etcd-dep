@@ -24,13 +24,12 @@ type ENIConfig struct {
 }
 
 type ENI struct {
-	awsInstanceID    string
-	awsSession       *session.Session
-	configureRouting bool
-	deviceIndex      int64
-	forceDetach      bool
-	tagKey           string
-	tagValue         string
+	awsInstanceID string
+	awsSession    *session.Session
+	deviceIndex   int64
+	forceDetach   bool
+	tagKey        string
+	tagValue      string
 }
 
 func NewENI(config ENIConfig) (*ENI, error) {
