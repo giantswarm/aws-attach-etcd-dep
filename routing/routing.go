@@ -62,7 +62,7 @@ func restartNetworkd() error {
 	cmdReload := exec.Command("/usr/bin/systemctl", "daemon-reload")
 	out, err := cmdReload.CombinedOutput()
 	if err != nil {
-		return microerror.Maskf(err, fmt.Sprintf("failed to reload daemon for systemd: %s", out))
+		return microerror.Maskf(executionFailedError, fmt.Sprintf("failed to reload daemon for systemd with error %#q and output %#q", err, out))
 	}
 
 	cmdRestart := exec.Command("/usr/bin/systemctl", "restart", "systemd-networkd")
