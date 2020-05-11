@@ -218,7 +218,7 @@ func (s *ENI) describeSubnet(ec2Client *ec2.EC2, subnetID string) (*ec2.Subnet, 
 
 	// id should give us only one unique subnet
 	if len(o.Subnets) != 1 {
-		return nil, microerror.Maskf(executionFailedError, "expected 1 eni but got %d instead", len(o.Subnets))
+		return nil, microerror.Maskf(executionFailedError, "expected 1 eni for subnedID %#q but got %d instead", subnetID, len(o.Subnets))
 	}
 
 	return o.Subnets[0], nil
