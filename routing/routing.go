@@ -68,7 +68,7 @@ func restartNetworkd() error {
 	cmdRestart := exec.Command("/usr/bin/systemctl", "restart", "systemd-networkd")
 	out, err = cmdRestart.CombinedOutput()
 	if err != nil {
-		return microerror.Maskf(err, fmt.Sprintf("failed to restart systemd-networkd: %s", out))
+		return microerror.Maskf(executionFailedError, fmt.Sprintf("failed to restart systemd-networkd with error %#q and output %#q", err, out))
 	}
 
 	return nil
