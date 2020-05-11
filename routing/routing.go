@@ -24,13 +24,13 @@ type params struct {
 
 func ConfigureNetworkRoutingForENI(eniIP string, eniSubnet *net.IPNet) error {
 
-	params := Params{
+	p := params{
 		ENIAddress:    eniIP,
 		ENIGateway:    eniGateway(eniSubnet),
 		ENISubnetSize: eniSubnetSize(eniSubnet),
 	}
 
-	err := renderRoutingNetworkdFile(params)
+	err := renderRoutingNetworkdFile(p)
 	if err != nil {
 		return microerror.Mask(err)
 	}
