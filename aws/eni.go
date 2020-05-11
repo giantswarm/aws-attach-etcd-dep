@@ -2,7 +2,6 @@ package aws
 
 import (
 	"fmt"
-	"github.com/giantswarm/aws-attach-etcd-dep/routing"
 	"net"
 	"time"
 
@@ -11,6 +10,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/aws-attach-etcd-dep/routing"
 )
 
 type ENIConfig struct {
