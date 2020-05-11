@@ -20,7 +20,6 @@ type params struct {
 }
 
 func ConfigureNetworkRoutingForENI(eniIP string, eniSubnet *net.IPNet) error {
-
 	p := params{
 		ENIAddress:    eniIP,
 		ENIGateway:    eniGateway(eniSubnet),
