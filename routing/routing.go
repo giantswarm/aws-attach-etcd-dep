@@ -53,8 +53,7 @@ func renderRoutingNetworkdFile(p params) error {
 
 func eniGateway(ipNet *net.IPNet) string {
 	// https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Subnets.html
-	gatewayAddressIP := dupIP(ipNet.IP)
-	gatewayAddressIP.To4()
+	gatewayAddressIP := cloneIP(ipNet.IP)
 	gatewayAddressIP[3] += 1
 
 	return gatewayAddressIP.String()
@@ -66,8 +65,8 @@ func eniSubnetSize(ipNet *net.IPNet) int {
 	return subnetSize
 }
 
-func dupIP(ip net.IP) net.IP {
-	dup := make(net.IP, len(ip))
-	copy(dup, ip)
-	return dup
+func cloneIP(ip net.IP) net.IP {
+	c := make(net.IP, len(ip))
+	copy(c, ip)
+	return c
 }
