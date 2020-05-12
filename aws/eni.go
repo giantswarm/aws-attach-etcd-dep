@@ -2,6 +2,7 @@ package aws
 
 import (
 	"fmt"
+	"net"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -9,6 +10,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/aws-attach-etcd-dep/routing"
 )
 
 type ENIConfig struct {
@@ -86,6 +89,22 @@ func (s *ENI) AttachByTag() error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
+
+	awsEniSubnet, err := s.describeSubnet(ec2Client, *eni.SubnetId)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	_, ipNet, err := net.ParseCIDR(*awsEniSubnet.CidrBlock)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = routing.ConfigureNetworkRoutingForENI(*eni.PrivateIpAddress, ipNet)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	fmt.Sprintf("Sucesfully configured routing for eth1  for ip %s.\n", *eni.PrivateIpAddress)
 	return nil
 }
 
@@ -181,4 +200,21 @@ func (s *ENI) detach(ec2Client *ec2.EC2, eni *ec2.NetworkInterface) error {
 
 	fmt.Printf("ENI detached, state %q .\n", ec2.NetworkInterfaceStatusAvailable)
 	return nil
+}
+
+func (s *ENI) describeSubnet(ec2Client *ec2.EC2, subnetID string) (*ec2.Subnet, error) {
+	describeSubnetInput := &ec2.DescribeSubnetsInput{
+		SubnetIds: []*string{aws.String(subnetID)},
+	}
+	o, err := ec2Client.DescribeSubnets(describeSubnetInput)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	// id should give us only one unique subnet
+	if len(o.Subnets) != 1 {
+		return nil, microerror.Maskf(executionFailedError, "expected 1 eni for subnedID %#q but got %d instead", subnetID, len(o.Subnets))
+	}
+
+	return o.Subnets[0], nil
 }
