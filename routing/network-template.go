@@ -16,6 +16,6 @@ Gateway={{.ENIGateway}}
 Table=2
 
 [Route]
-Destination={{.ENISubnet}}/{{.ENISubnetSize}}
+Destination={{.ENISubnet}}
 Table=2
 Scope=link`
