@@ -4,6 +4,9 @@ const networkRoutingTemplate = `# ensure that traffic arriving on eth1 leaves ag
 [Match]
 Name=eth1
 
+[Network]
+DHCP=no
+
 [Address]
 Address={{.ENIAddress}}/{{.ENISubnetSize}}
 Scope=2
