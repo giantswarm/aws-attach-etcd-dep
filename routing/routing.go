@@ -16,6 +16,7 @@ const (
 type params struct {
 	ENIAddress    string
 	ENIGateway    string
+	ENISubnet     string
 	ENISubnetSize int
 }
 
@@ -23,6 +24,7 @@ func ConfigureNetworkRoutingForENI(eniIP string, eniSubnet *net.IPNet) error {
 	p := params{
 		ENIAddress:    eniIP,
 		ENIGateway:    eniGateway(eniSubnet),
+		ENISubnet:     eniSubnet.String(),
 		ENISubnetSize: eniSubnetSize(eniSubnet),
 	}
 

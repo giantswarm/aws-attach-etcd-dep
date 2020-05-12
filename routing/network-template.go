@@ -13,4 +13,9 @@ From={{.ENIAddress}}/32
 [Route]
 Destination=0.0.0.0/0
 Gateway={{.ENIGateway}}
-Table=2`
+Table=2
+
+[Route]
+Destination={{.ENISubnet}}/{{.ENISubnetSize}}
+Table=2
+Scope=link`
