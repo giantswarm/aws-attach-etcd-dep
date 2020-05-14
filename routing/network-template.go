@@ -4,11 +4,8 @@ const networkRoutingTemplate = `# ensure that traffic arriving on eth1 leaves ag
 [Match]
 Name=eth1
 
-[Network]
-DHCP=no
-
 [Address]
-Address={{.ENIAddress}}/{{.ENISubnetSize}}
+Address={{.ENIAddress}}/32
 Scope=2
 
 [RoutingPolicyRule]
@@ -18,6 +15,7 @@ From={{.ENIAddress}}/32
 [Route]
 Destination=0.0.0.0/0
 Gateway={{.ENIGateway}}
+GatewayOnlink=true
 Table=2
 
 [Route]
