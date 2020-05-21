@@ -8,8 +8,10 @@ import (
 )
 
 const (
-	maxRetries    = 15
-	retryInterval = time.Second * 10
+	// back off retry config
+	// retry for 2 hours
+	maxRetries    = 240
+	retryInterval = time.Second * 15
 )
 
 func tagKey(input string) *string {
