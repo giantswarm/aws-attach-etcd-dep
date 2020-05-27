@@ -129,7 +129,7 @@ func (s *ENI) describe(ec2Client *ec2.EC2) (*ec2.NetworkInterface, error) {
 
 		// tags should give us only one unique volume
 		if len(out.NetworkInterfaces) != 1 {
-			fmt.Printf("expected 1 eni but got %d instead retrying in %ds", len(out.NetworkInterfaces), retryInterval)
+			fmt.Printf("expected 1 eni but got %d instead retrying in %ds\n", len(out.NetworkInterfaces), retryInterval/time.Second)
 			return microerror.Maskf(executionFailedError, "expected 1 eni but got %d instead", len(out.NetworkInterfaces))
 		}
 
