@@ -119,17 +119,29 @@ func (s *ENI) describe(ec2Client *ec2.EC2) (*ec2.NetworkInterface, error) {
 			eniFilter,
 		},
 	}
-	o, err := ec2Client.DescribeNetworkInterfaces(describeVolumeInput)
+	var eni *ec2.NetworkInterface
+	b := backoff.NewMaxRetries(maxRetries, retryInterval)
+	o := func() error {
+		out, err := ec2Client.DescribeNetworkInterfaces(describeVolumeInput)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		// tags should give us only one unique volume
+		if len(out.NetworkInterfaces) != 1 {
+			return microerror.Maskf(executionFailedError, "expected 1 eni but got %d instead", len(out.NetworkInterfaces))
+		}
+
+		eni = out.NetworkInterfaces[0]
+		return nil
+	}
+	err := backoff.Retry(o, b)
 	if err != nil {
+		fmt.Printf("Failed to describe eni after %d retries.\n", maxRetries)
 		return nil, microerror.Mask(err)
 	}
 
-	// tags should give us only one unique volume
-	if len(o.NetworkInterfaces) != 1 {
-		return nil, microerror.Maskf(executionFailedError, "expected 1 eni but got %d instead", len(o.NetworkInterfaces))
-	}
-
-	return o.NetworkInterfaces[0], nil
+	return eni, nil
 }
 
 func (s *ENI) attach(ec2Client *ec2.EC2, instanceID string, eniID string) error {
