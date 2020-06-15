@@ -159,6 +159,25 @@ func (s *EBS) attach(ec2Client *ec2.EC2, instanceID string, volumeID string) err
 }
 
 func (s *EBS) detach(ec2Client *ec2.EC2, volume *ec2.Volume) error {
+	b := backoff.NewMaxRetries(waitAutoDetachMaxRetries, retryInterval)
+	o := func() error {
+		volume, err := s.describe(ec2Client)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		if *volume.State != ec2.VolumeStateAvailable {
+			fmt.Printf("Volume state is %q, expecting %q, retrying in %ds.\n", *volume.State, ec2.VolumeStateAvailable, retryInterval/time.Second)
+			return microerror.Maskf(executionFailedError, "EBS not detached")
+		}
+		return nil
+	}
+	err := backoff.Retry(o, b)
+	if err == nil {
+		// the Volume was eventually detached by the instance by itself, no need for manual detach
+		return nil
+	}
+
 	detachVolumeInput := &ec2.DetachVolumeInput{
 		Device:     volume.Attachments[0].Device,
 		InstanceId: volume.Attachments[0].InstanceId,
@@ -172,19 +191,7 @@ func (s *EBS) detach(ec2Client *ec2.EC2, volume *ec2.Volume) error {
 	}
 	fmt.Printf("Succefully created dettach request. %q\n", detachment.String())
 
-	b := backoff.NewMaxRetries(maxRetries, retryInterval)
-	o := func() error {
-		volume, err := s.describe(ec2Client)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		if *volume.State != ec2.VolumeStateAvailable {
-			fmt.Printf("Volume state is %q, expecting %q, retrying in %ds.\n", *volume.State, ec2.VolumeStateAvailable, retryInterval/time.Second)
-			return microerror.Maskf(executionFailedError, "EBS not detached")
-		}
-		return nil
-	}
+	b = backoff.NewMaxRetries(maxRetries, retryInterval)
 	err = backoff.Retry(o, b)
 	if err != nil {
 		fmt.Printf("Failed to detach volume after %d retries.\n", maxRetries)
