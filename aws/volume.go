@@ -159,20 +159,8 @@ func (s *EBS) attach(ec2Client *ec2.EC2, instanceID string, volumeID string) err
 }
 
 func (s *EBS) detach(ec2Client *ec2.EC2, volume *ec2.Volume) error {
-	detachVolumeInput := &ec2.DetachVolumeInput{
-		Device:     volume.Attachments[0].Device,
-		InstanceId: volume.Attachments[0].InstanceId,
-		VolumeId:   volume.VolumeId,
-		Force:      aws.Bool(s.forceDetach),
-	}
-
-	detachment, err := ec2Client.DetachVolume(detachVolumeInput)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	fmt.Printf("Succefully created dettach request. %q\n", detachment.String())
-
-	b := backoff.NewMaxRetries(maxRetries, retryInterval)
+	// wait if automatic detach happens  by terminating the instance
+	b := backoff.NewMaxRetries(waitAutoDetachMaxRetries, retryInterval)
 	o := func() error {
 		volume, err := s.describe(ec2Client)
 		if err != nil {
@@ -185,10 +173,32 @@ func (s *EBS) detach(ec2Client *ec2.EC2, volume *ec2.Volume) error {
 		}
 		return nil
 	}
-	err = backoff.Retry(o, b)
+
+	err := backoff.Retry(o, b)
 	if err != nil {
-		fmt.Printf("Failed to detach volume after %d retries.\n", maxRetries)
-		return microerror.Mask(err)
+		// the Volume was eventually detached by the instance by itself, no need for manual detach
+		return nil
+	} else {
+		// volume is still attached after 10mins, lets try detach it manually here
+		detachVolumeInput := &ec2.DetachVolumeInput{
+			Device:     volume.Attachments[0].Device,
+			InstanceId: volume.Attachments[0].InstanceId,
+			VolumeId:   volume.VolumeId,
+			Force:      aws.Bool(s.forceDetach),
+		}
+
+		detachment, err := ec2Client.DetachVolume(detachVolumeInput)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		fmt.Printf("Succefully created dettach request. %q\n", detachment.String())
+
+		b = backoff.NewMaxRetries(maxRetries, retryInterval)
+		err = backoff.Retry(o, b)
+		if err != nil {
+			fmt.Printf("Failed to detach volume after %d retries.\n", maxRetries)
+			return microerror.Mask(err)
+		}
 	}
 
 	fmt.Printf("Volume detached, state %q .\n", ec2.VolumeStateAvailable)

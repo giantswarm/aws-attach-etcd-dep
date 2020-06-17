@@ -181,18 +181,9 @@ func (s *ENI) attach(ec2Client *ec2.EC2, instanceID string, eniID string) error 
 }
 
 func (s *ENI) detach(ec2Client *ec2.EC2, eni *ec2.NetworkInterface) error {
-	detachNetworkInterfaceInput := &ec2.DetachNetworkInterfaceInput{
-		AttachmentId: eni.Attachment.AttachmentId,
-		Force:        aws.Bool(s.forceDetach),
-	}
+	// wait if automatic detach happens  by terminating the instance
 
-	detachment, err := ec2Client.DetachNetworkInterface(detachNetworkInterfaceInput)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	fmt.Printf("Succefully created dettach request. %s\n", detachment.String())
-
-	b := backoff.NewMaxRetries(maxRetries, retryInterval)
+	b := backoff.NewMaxRetries(waitAutoDetachMaxRetries, retryInterval)
 	o := func() error {
 		eni, err := s.describe(ec2Client)
 		if err != nil {
@@ -205,12 +196,31 @@ func (s *ENI) detach(ec2Client *ec2.EC2, eni *ec2.NetworkInterface) error {
 		}
 		return nil
 	}
-	err = backoff.Retry(o, b)
-	if err != nil {
-		fmt.Printf("Failed to detach eni after %d retries.\n", maxRetries)
-		return microerror.Mask(err)
-	}
 
+	err := backoff.Retry(o, b)
+	if err == nil {
+		// the ENI was eventually detached by the instance by itself, no need for manual detach
+		return nil
+	} else {
+		// eni is still attached after 10mins, lets try detach it manually here
+		detachNetworkInterfaceInput := &ec2.DetachNetworkInterfaceInput{
+			AttachmentId: eni.Attachment.AttachmentId,
+			Force:        aws.Bool(s.forceDetach),
+		}
+
+		detachment, err := ec2Client.DetachNetworkInterface(detachNetworkInterfaceInput)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		fmt.Printf("Succefully created dettach request. %s\n", detachment.String())
+
+		b = backoff.NewMaxRetries(maxRetries, retryInterval)
+		err = backoff.Retry(o, b)
+		if err != nil {
+			fmt.Printf("Failed to detach eni after %d retries.\n", maxRetries)
+			return microerror.Mask(err)
+		}
+	}
 	fmt.Printf("ENI detached, state %q .\n", ec2.NetworkInterfaceStatusAvailable)
 	return nil
 }
