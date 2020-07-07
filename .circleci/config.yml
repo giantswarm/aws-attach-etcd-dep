@@ -1,52 +1,54 @@
 version: 2.1
+
 orbs:
-  architect: giantswarm/architect@0.4.5
-
-jobs:
-  build:
-    machine: true
-    steps:
-    - checkout
-
-    - run:
-        name: Get architect binary
-        command: |
-          wget -q $(curl -sS -H "Authorization: token $RELEASE_TOKEN" https://api.github.com/repos/giantswarm/architect/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
-          chmod +x ./architect
-          ./architect version
-
-    - run: ./architect build
-    - persist_to_workspace:
-        root: .
-        paths:
-        - ./aws-attach-etcd-dep
-        - ./architect
-
-  deploy:
-    machine: true
-    steps:
-    - checkout
-
-    - attach_workspace:
-        at: .
-
-    - run: ./architect deploy
+  architect: giantswarm/architect@0.10.0
 
 workflows:
-  build_and_push:
+  build:
     jobs:
-      - build
-      - architect/push-to-docker-legacy:
-          name: push-aws-attach-etcd-dep-to-aliyun
+      - architect/go-build:
+          name: go-build
+          binary: aws-attach-etcd-dep
+          filters:
+            tags:
+              only: /^v.*/
+
+      - architect/push-to-docker:
+          context: architect
+          name: push-to-quay
+          image: "quay.io/giantswarm/aws-attach-etcd-dep"
+          username_envar: "QUAY_USERNAME"
+          password_envar: "QUAY_PASSWORD"
+          requires:
+            - go-build
+          filters:
+            tags:
+              only: /^v.*/
+
+      - architect/push-to-docker:
+          context: architect
+          name: push-to-aliyun-master
           image: "registry-intl.cn-shanghai.aliyuncs.com/giantswarm/aws-attach-etcd-dep"
           username_envar: "ALIYUN_USERNAME"
           password_envar: "ALIYUN_PASSWORD"
           requires:
-            - build
-
-      - deploy:
+            - go-build
           filters:
             branches:
               only: master
+            tags:
+              only: /^v.*/
+
+      - architect/push-to-docker:
+          context: architect
+          name: push-to-aliyun-pr
+          image: "registry-intl.cn-shanghai.aliyuncs.com/giantswarm/aws-attach-etcd-dep"
+          username_envar: "ALIYUN_USERNAME"
+          password_envar: "ALIYUN_PASSWORD"
           requires:
-          - build
+            - go-build
+          filters:
+            branches:
+              ignore: master
+            tags:
+              ignore: /^v.*/

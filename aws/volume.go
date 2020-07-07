@@ -90,15 +90,6 @@ func (s *EBS) AttachByTag() error {
 	return nil
 }
 
-func (s *EBS) getID(ec2Client *ec2.EC2) (string, error) {
-	volume, err := s.describe(ec2Client)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	return *volume.VolumeId, nil
-}
-
 func (s *EBS) describe(ec2Client *ec2.EC2) (*ec2.Volume, error) {
 	volumeFilter := &ec2.Filter{
 		Name:   tagKey(s.tagKey),
