@@ -45,7 +45,7 @@ func renderRoutingNetworkdFile(p params) error {
 		return microerror.Mask(err)
 	}
 
-	err = ioutil.WriteFile(eth1FileName, buff.Bytes(), 0644)
+	err = ioutil.WriteFile(eth1FileName, buff.Bytes(), 0644) // nolint
 	if err != nil {
 		return microerror.Mask(err)
 	}

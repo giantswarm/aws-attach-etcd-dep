@@ -104,7 +104,7 @@ func (s *ENI) AttachByTag() error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	fmt.Sprintf("Sucesfully configured routing for eth1  for ip %s.\n", *eni.PrivateIpAddress)
+	fmt.Printf("Sucesfully configured routing for eth1  for ip %s.\n", *eni.PrivateIpAddress)
 	return nil
 }
 
