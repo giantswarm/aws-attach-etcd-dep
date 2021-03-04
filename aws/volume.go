@@ -2,7 +2,6 @@ package aws
 
 import (
 	"fmt"
-	"github.com/giantswarm/aws-attach-etcd-dep/metadata"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -10,6 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/aws-attach-etcd-dep/metadata"
 )
 
 type EBSConfig struct {
