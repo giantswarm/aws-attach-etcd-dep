@@ -2,6 +2,7 @@ package aws
 
 import (
 	"fmt"
+	"github.com/giantswarm/aws-attach-etcd-dep/metadata"
 	"net"
 	"time"
 
@@ -109,6 +110,14 @@ func (s *ENI) AttachByTag() error {
 }
 
 func (s *ENI) describe(ec2Client *ec2.EC2) (*ec2.NetworkInterface, error) {
+	az, err := metadata.GetAZ(s.awsSession)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	eniAZFilter := &ec2.Filter{
+		Name:   azKeyFilter(),
+		Values: tagValue(az),
+	}
 	eniFilter := &ec2.Filter{
 		Name:   tagKey(s.tagKey),
 		Values: tagValue(s.tagValue),
@@ -116,6 +125,7 @@ func (s *ENI) describe(ec2Client *ec2.EC2) (*ec2.NetworkInterface, error) {
 
 	describeVolumeInput := &ec2.DescribeNetworkInterfacesInput{
 		Filters: []*ec2.Filter{
+			eniAZFilter,
 			eniFilter,
 		},
 	}
