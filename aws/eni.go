@@ -146,7 +146,7 @@ func (s *ENI) describe(ec2Client *ec2.EC2) (*ec2.NetworkInterface, error) {
 		eni = out.NetworkInterfaces[0]
 		return nil
 	}
-	err := backoff.Retry(o, b)
+	err = backoff.Retry(o, b)
 	if err != nil {
 		fmt.Printf("Failed to describe eni after %d retries.\n", maxRetries)
 		return nil, microerror.Mask(err)
