@@ -2,7 +2,6 @@ package aws
 
 import (
 	"fmt"
-	"github.com/giantswarm/aws-attach-etcd-dep/metadata"
 	"net"
 	"time"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/aws-attach-etcd-dep/metadata"
 	"github.com/giantswarm/aws-attach-etcd-dep/routing"
 )
 
