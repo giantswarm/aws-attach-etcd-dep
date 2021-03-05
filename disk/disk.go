@@ -56,6 +56,19 @@ func EnsureDiskHasFileSystem(deviceName string, desiredFsType string, desiredLab
 	return nil
 }
 
+func MountDisk(deviceName string, mountPath string, fsType string) error {
+	var out, outError bytes.Buffer
+	cmd := exec.Command("/bin/mount", "-t", fsType, deviceName, mountPath)
+	cmd.Stdout = &out
+	cmd.Stderr = &outError
+	err := cmd.Run()
+	if err != nil {
+		return microerror.Maskf(err, fmt.Sprintf("failed to mount disk '%s', err: %s", deviceName, outError.String()))
+	}
+	fmt.Printf("The device '%s' was mounted to '%s'\n", deviceName, mountPath)
+	return nil
+}
+
 func getFsType(deviceName string) (string, error) {
 	var out, outError bytes.Buffer
 	cmd := exec.Command("/bin/lsblk", "-n", "-o", "FSTYPE", "-f", deviceName)
