@@ -82,7 +82,7 @@ func mainError() error {
 			AWSInstanceID: instanceID,
 			AwsSession:    awsSession,
 			DeviceIndex:   f.EniDeviceIndex,
-			DeviceName:    f.VolumeDeviceName,
+			DeviceName:    f.EniDeviceName,
 			ForceDetach:   f.EniForceDetach,
 			TagKey:        f.EniTagKey,
 			TagValue:      f.EniTagValue,
