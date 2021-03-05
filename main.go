@@ -15,6 +15,7 @@ import (
 
 type Flag struct {
 	EniDeviceIndex     int64
+	EniDeviceName      string
 	EniForceDetach     bool
 	EniTagKey          string
 	EniTagValue        string
@@ -43,9 +44,10 @@ func mainError() error {
 	flag.BoolVar(&f.EniForceDetach, "eni-force-detach", false, "If set to true, app will use force-detach if the ENI cannot be detached by normal detach operation..")
 	flag.StringVar(&f.EniTagKey, "eni-tag-key", "aws-attach-by-id", "Tag key that will be used to found the requested ENI in AWS API.")
 	flag.StringVar(&f.EniTagValue, "eni-tag-value", "test", "Tag value that will be used to found the requested ENI in AWS API, this tag should identify one unique ENI.")
+	flag.StringVar(&f.EniDeviceName, "eni-device-name", "eth1", "specify a device naem that wil be used for configuring the NICs in OS.")
 
 	flag.BoolVar(&f.MountDisk, "mount-disk", false, "If set to true, the EBS volume is mounted into FS as well.")
-	flag.StringVar(&f.MountDiskPath, "mount-disk-path", "/var/lib.etcd", "Define the mounth path of the EBS volume.")
+	flag.StringVar(&f.MountDiskPath, "mount-disk-path", "/var/lib/etcd", "Define the mounth path of the EBS volume.")
 
 	flag.StringVar(&f.VolumeDeviceName, "volume-device-name", "/dev/xvdh", "Volume device name that will be used for attaching the EBS volume.")
 	flag.StringVar(&f.VolumeDeviceFsType, "volume-device-filesystem-type", "ext4", "In case that the EBS device has no file-system, it will be formatted using this value.")
@@ -80,6 +82,7 @@ func mainError() error {
 			AWSInstanceID: instanceID,
 			AwsSession:    awsSession,
 			DeviceIndex:   f.EniDeviceIndex,
+			DeviceName:    f.VolumeDeviceName,
 			ForceDetach:   f.EniForceDetach,
 			TagKey:        f.EniTagKey,
 			TagValue:      f.EniTagValue,

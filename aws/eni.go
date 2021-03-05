@@ -19,6 +19,7 @@ type ENIConfig struct {
 	AWSInstanceID string
 	AwsSession    *session.Session
 	DeviceIndex   int64
+	DeviceName    string
 	ForceDetach   bool
 	TagKey        string
 	TagValue      string
@@ -28,6 +29,7 @@ type ENI struct {
 	awsInstanceID string
 	awsSession    *session.Session
 	deviceIndex   int64
+	deviceName    string
 	forceDetach   bool
 	tagKey        string
 	tagValue      string
@@ -43,6 +45,9 @@ func NewENI(config ENIConfig) (*ENI, error) {
 	if config.DeviceIndex == 0 {
 		return nil, microerror.Maskf(invalidConfigError, "config.DeviceIndex must not be 0")
 	}
+	if config.DeviceName == "" {
+		return nil, microerror.Maskf(invalidConfigError, "config.DeviceName must not be empty")
+	}
 	if config.TagKey == "" {
 		return nil, microerror.Maskf(invalidConfigError, "config.TagKey must not be empty")
 	}
@@ -54,6 +59,7 @@ func NewENI(config ENIConfig) (*ENI, error) {
 		awsInstanceID: config.AWSInstanceID,
 		awsSession:    config.AwsSession,
 		deviceIndex:   config.DeviceIndex,
+		deviceName:    config.DeviceName,
 		forceDetach:   config.ForceDetach,
 		tagKey:        config.TagKey,
 		tagValue:      config.TagValue,
@@ -101,7 +107,7 @@ func (s *ENI) AttachByTag() error {
 		return microerror.Mask(err)
 	}
 
-	err = routing.ConfigureNetworkRoutingForENI(*eni.PrivateIpAddress, ipNet)
+	err = routing.ConfigureNetworkRoutingForENI(*eni.PrivateIpAddress, ipNet, s.deviceName)
 	if err != nil {
 		return microerror.Mask(err)
 	}
