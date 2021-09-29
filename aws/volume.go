@@ -2,6 +2,7 @@ package aws
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -179,7 +180,9 @@ func (s *EBS) detach(ec2Client *ec2.EC2, volume *ec2.Volume) error {
 		}
 
 		detachment, err := ec2Client.DetachVolume(detachVolumeInput)
-		if err != nil {
+		if strings.Contains(err.Error(), "IncorrectState") {
+			// volume is probably already detached, lets ignore the error
+		} else if err != nil {
 			return microerror.Mask(err)
 		}
 		fmt.Printf("Succefully created dettach request. %q\n", detachment.String())
