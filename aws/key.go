@@ -13,8 +13,8 @@ const (
 	maxRetries    = 240
 	retryInterval = time.Second * 15
 
-	// wait for detach for 20 mins
-	waitAutoDetachMaxRetries = 80
+	// wait for detach for 30 mins
+	waitAutoDetachMaxRetries = 120
 )
 
 func tagKey(input string) *string {
