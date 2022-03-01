@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Increase wait time for disk and ENI attachment.
+
 ## [0.2.0] - 2021-09-29
 
 ## [0.1.0] - 2020-07-07
