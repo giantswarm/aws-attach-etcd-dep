@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2022-03-01
+
 ### Changed
 
 - Increase wait time for disk and ENI attachment.
@@ -25,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Address linter errors.
 
-[Unreleased]: https://github.com/giantswarm/aws-attach-etcd-dep/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/giantswarm/aws-attach-etcd-dep/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/giantswarm/aws-attach-etcd-dep/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/giantswarm/aws-attach-etcd-dep/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/giantswarm/aws-attach-etcd-dep/releases/tag/v0.1.0
