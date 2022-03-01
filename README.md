@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/giantswarm/aws-attach-ebs-by-tag.svg?style=shield&circle-token=cbabd7d13186f190fca813db4f0c732b026f5f6c)](https://circleci.com/gh/giantswarm/aws-attach-ebs-by-tag)
+[![CircleCI](https://circleci.com/gh/giantswarm/aws-attach-etcd-dep/tree/master.svg?style=svg)](https://circleci.com/gh/giantswarm/aws-attach-etcd-dep/tree/master)
 
 # aws attach etcd dependencies
 
