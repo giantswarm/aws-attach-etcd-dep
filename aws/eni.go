@@ -165,7 +165,7 @@ func (s *ENI) attach(ec2Client *ec2.EC2, instanceID string, eniID string) error 
 		}
 
 		if *eni.Status != ec2.NetworkInterfaceStatusInUse && *eni.Attachment.InstanceId == instanceID {
-			fmt.Printf("Volume state is %q, expecting %q, retrying in %ds.\n", *eni.Status, ec2.NetworkInterfaceStatusInUse, retryInterval/time.Second)
+			fmt.Printf("ENI state is %q, expecting %q, retrying in %ds.\n", *eni.Status, ec2.NetworkInterfaceStatusInUse, retryInterval/time.Second)
 			return microerror.Maskf(executionFailedError, "ENI not attached")
 		}
 		return nil
@@ -191,7 +191,7 @@ func (s *ENI) detach(ec2Client *ec2.EC2, eni *ec2.NetworkInterface) error {
 		}
 
 		if *eni.Status != ec2.NetworkInterfaceStatusAvailable {
-			fmt.Printf("Volume state is %q, expecting %q, retrying in %s.\n", *eni.Status, ec2.NetworkInterfaceStatusAvailable, retryInterval)
+			fmt.Printf("ENI state is %q, expecting %q, retrying in %s.\n", *eni.Status, ec2.NetworkInterfaceStatusAvailable, retryInterval)
 			return microerror.Maskf(executionFailedError, "ENI not detached")
 		}
 		return nil
