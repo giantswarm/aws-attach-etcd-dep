@@ -13,6 +13,8 @@ const (
 	maxRetries    = 240
 	retryInterval = time.Second * 15
 
+	attachRequestRetries = 5
+
 	// wait for detach for 30 mins
 	waitAutoDetachMaxRetries = 120
 )
