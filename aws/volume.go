@@ -121,14 +121,26 @@ func (s *EBS) attach(ec2Client *ec2.EC2, instanceID string, volumeID string) err
 		InstanceId: aws.String(instanceID),
 		VolumeId:   aws.String(volumeID),
 	}
-	attachment, err := ec2Client.AttachVolume(attachVolumeInput)
+
+	b := backoff.NewMaxRetries(attachRequestRetries, retryInterval)
+	o := func() error {
+		attachment, err := ec2Client.AttachVolume(attachVolumeInput)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		fmt.Printf("Succefully created attach request. %q\n", attachment.String())
+		return nil
+	}
+
+	err := backoff.Retry(o, b)
 	if err != nil {
+		fmt.Printf("Failed to create volume volume attach request after %d retries.\n", attachRequestRetries)
 		return microerror.Mask(err)
 	}
-	fmt.Printf("Succefully created attach request. %q\n", attachment.String())
 
-	b := backoff.NewMaxRetries(maxRetries, retryInterval)
-	o := func() error {
+	b = backoff.NewMaxRetries(maxRetries, retryInterval)
+	o = func() error {
 		volume, err := s.describe(ec2Client)
 		if err != nil {
 			return microerror.Mask(err)

@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Use backoff to retry attaching the etcd volume if AWS API request fails.
+
 ## [0.3.0] - 2022-03-01
 
 ### Changed
