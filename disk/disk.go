@@ -63,7 +63,7 @@ func getFsType(deviceName string) (string, error) {
 	cmd.Stderr = &outError
 	err := cmd.Run()
 	if err != nil {
-		return "", microerror.Maskf(err, fmt.Sprintf("failed to check fs type for '%s', err: %s", deviceName, outError.String()))
+		return "", microerror.Maskf(executionFailedError, fmt.Sprintf("failed to check fs type for '%s', err: %s", deviceName, outError.String()))
 	}
 	return strings.TrimSpace(out.String()), nil
 }
