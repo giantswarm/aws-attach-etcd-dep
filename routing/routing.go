@@ -15,14 +15,16 @@ const (
 
 type params struct {
 	ENIAddress    string
+	ENIDeviceName string
 	ENIGateway    string
 	ENISubnet     string
 	ENISubnetSize int
 }
 
-func ConfigureNetworkRoutingForENI(eniIP string, eniSubnet *net.IPNet) error {
+func ConfigureNetworkRoutingForENI(eniIP string, eniSubnet *net.IPNet, deviceName string) error {
 	p := params{
 		ENIAddress:    eniIP,
+		ENIDeviceName: deviceName,
 		ENIGateway:    eniGateway(eniSubnet),
 		ENISubnet:     eniSubnet.String(),
 		ENISubnetSize: eniSubnetSize(eniSubnet),

@@ -2,7 +2,7 @@ package routing
 
 const networkRoutingTemplate = `# ensure that traffic arriving on eth1 leaves again from eth1 to prevent asymetric routing
 [Match]
-Name=eth1
+Name={{.ENIDeviceName}}
 
 [Address]
 Address={{.ENIAddress}}/32

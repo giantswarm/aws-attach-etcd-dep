@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/aws-attach-etcd-dep/metadata"
 	"github.com/giantswarm/aws-attach-etcd-dep/routing"
 )
 
@@ -18,6 +19,7 @@ type ENIConfig struct {
 	AWSInstanceID string
 	AwsSession    *session.Session
 	DeviceIndex   int64
+	DeviceName    string
 	ForceDetach   bool
 	TagKey        string
 	TagValue      string
@@ -27,6 +29,7 @@ type ENI struct {
 	awsInstanceID string
 	awsSession    *session.Session
 	deviceIndex   int64
+	deviceName    string
 	forceDetach   bool
 	tagKey        string
 	tagValue      string
@@ -42,6 +45,9 @@ func NewENI(config ENIConfig) (*ENI, error) {
 	if config.DeviceIndex == 0 {
 		return nil, microerror.Maskf(invalidConfigError, "config.DeviceIndex must not be 0")
 	}
+	if config.DeviceName == "" {
+		return nil, microerror.Maskf(invalidConfigError, "config.DeviceName must not be empty")
+	}
 	if config.TagKey == "" {
 		return nil, microerror.Maskf(invalidConfigError, "config.TagKey must not be empty")
 	}
@@ -53,6 +59,7 @@ func NewENI(config ENIConfig) (*ENI, error) {
 		awsInstanceID: config.AWSInstanceID,
 		awsSession:    config.AwsSession,
 		deviceIndex:   config.DeviceIndex,
+		deviceName:    config.DeviceName,
 		forceDetach:   config.ForceDetach,
 		tagKey:        config.TagKey,
 		tagValue:      config.TagValue,
@@ -100,7 +107,7 @@ func (s *ENI) AttachByTag() error {
 		return microerror.Mask(err)
 	}
 
-	err = routing.ConfigureNetworkRoutingForENI(*eni.PrivateIpAddress, ipNet)
+	err = routing.ConfigureNetworkRoutingForENI(*eni.PrivateIpAddress, ipNet, s.deviceName)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -109,6 +116,14 @@ func (s *ENI) AttachByTag() error {
 }
 
 func (s *ENI) describe(ec2Client *ec2.EC2) (*ec2.NetworkInterface, error) {
+	az, err := metadata.GetAZ(s.awsSession)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	eniAZFilter := &ec2.Filter{
+		Name:   azKeyFilter(),
+		Values: tagValue(az),
+	}
 	eniFilter := &ec2.Filter{
 		Name:   tagKey(s.tagKey),
 		Values: tagValue(s.tagValue),
@@ -116,6 +131,7 @@ func (s *ENI) describe(ec2Client *ec2.EC2) (*ec2.NetworkInterface, error) {
 
 	describeVolumeInput := &ec2.DescribeNetworkInterfacesInput{
 		Filters: []*ec2.Filter{
+			eniAZFilter,
 			eniFilter,
 		},
 	}
@@ -136,7 +152,7 @@ func (s *ENI) describe(ec2Client *ec2.EC2) (*ec2.NetworkInterface, error) {
 		eni = out.NetworkInterfaces[0]
 		return nil
 	}
-	err := backoff.Retry(o, b)
+	err = backoff.Retry(o, b)
 	if err != nil {
 		fmt.Printf("Failed to describe eni after %d retries.\n", maxRetries)
 		return nil, microerror.Mask(err)

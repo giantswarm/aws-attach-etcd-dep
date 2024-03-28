@@ -10,6 +10,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/aws-attach-etcd-dep/metadata"
 )
 
 type EBSConfig struct {
@@ -92,14 +94,23 @@ func (s *EBS) AttachByTag() error {
 }
 
 func (s *EBS) describe(ec2Client *ec2.EC2) (*ec2.Volume, error) {
-	volumeFilter := &ec2.Filter{
+	az, err := metadata.GetAZ(s.awsSession)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	volumeAZFilter := &ec2.Filter{
+		Name:   azKeyFilter(),
+		Values: tagValue(az),
+	}
+	volumeTagFilter := &ec2.Filter{
 		Name:   tagKey(s.tagKey),
 		Values: tagValue(s.tagValue),
 	}
 
 	describeVolumeInput := &ec2.DescribeVolumesInput{
 		Filters: []*ec2.Filter{
-			volumeFilter,
+			volumeAZFilter,
+			volumeTagFilter,
 		},
 	}
 	o, err := ec2Client.DescribeVolumes(describeVolumeInput)
