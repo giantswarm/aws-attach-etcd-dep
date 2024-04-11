@@ -151,14 +151,16 @@ func (s *ENI) attach(ec2Client *ec2.EC2, instanceID string, eniID string) error 
 		InstanceId:         aws.String(instanceID),
 		NetworkInterfaceId: aws.String(eniID),
 	}
-	attachment, err := ec2Client.AttachNetworkInterface(attachNetworkInterfaceInput)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	fmt.Printf("Succefully created attach request. %s\n", attachment.String())
 
 	b := backoff.NewMaxRetries(maxRetries, retryInterval)
 	o := func() error {
+		fmt.Printf("Attempting to attach ENI.\n")
+		attachment, err := ec2Client.AttachNetworkInterface(attachNetworkInterfaceInput)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		fmt.Printf("Succesfully created attach request. %s\n", attachment.String())
+
 		eni, err := s.describe(ec2Client)
 		if err != nil {
 			return microerror.Mask(err)
@@ -170,7 +172,7 @@ func (s *ENI) attach(ec2Client *ec2.EC2, instanceID string, eniID string) error 
 		}
 		return nil
 	}
-	err = backoff.Retry(o, b)
+	err := backoff.Retry(o, b)
 	if err != nil {
 		fmt.Printf("Failed to attach eni after %d retries.\n", maxRetries)
 		return microerror.Mask(err)
