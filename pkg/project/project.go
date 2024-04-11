@@ -5,7 +5,7 @@ var (
 	gitSHA             = "n/a"
 	name        string = "aws-attach-ebs-by-tag"
 	source      string = "https://github.com/giantswarm/aws-attach-ebs-by-tag"
-	version            = "0.4.1-dev"
+	version            = "0.4.0"
 )
 
 func Description() string {
