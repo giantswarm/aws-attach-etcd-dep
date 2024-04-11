@@ -3,7 +3,7 @@ module github.com/giantswarm/aws-attach-etcd-dep
 go 1.17
 
 require (
-	github.com/aws/aws-sdk-go v1.44.21
+	github.com/aws/aws-sdk-go v1.51.19
 	github.com/giantswarm/backoff v1.0.0
 	github.com/giantswarm/microerror v0.4.1
 	github.com/spf13/pflag v1.0.5
