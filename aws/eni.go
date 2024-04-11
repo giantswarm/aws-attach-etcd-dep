@@ -157,6 +157,7 @@ func (s *ENI) attach(ec2Client *ec2.EC2, instanceID string, eniID string) error 
 		fmt.Printf("Attempting to attach ENI.\n")
 		attachment, err := ec2Client.AttachNetworkInterface(attachNetworkInterfaceInput)
 		if err != nil {
+			fmt.Printf("Error attachine ENI: %s\n", err)
 			return microerror.Mask(err)
 		}
 		fmt.Printf("Succesfully created attach request. %s\n", attachment.String())
