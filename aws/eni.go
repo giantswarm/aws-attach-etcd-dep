@@ -161,6 +161,17 @@ func (s *ENI) attach(ec2Client *ec2.EC2, instanceID string, eniID string) error 
 		}
 		fmt.Printf("Succesfully created attach request. %s\n", attachment.String())
 
+		return nil
+	}
+
+	err := backoff.Retry(o, b)
+	if err != nil {
+		fmt.Printf("Failed to attach eni after %d retries.\n", maxRetries)
+		return microerror.Mask(err)
+	}
+
+	o = func() error {
+		fmt.Printf("Checking ENI ettachment was successful.\n")
 		eni, err := s.describe(ec2Client)
 		if err != nil {
 			return microerror.Mask(err)
@@ -172,9 +183,9 @@ func (s *ENI) attach(ec2Client *ec2.EC2, instanceID string, eniID string) error 
 		}
 		return nil
 	}
-	err := backoff.Retry(o, b)
+	err = backoff.Retry(o, b)
 	if err != nil {
-		fmt.Printf("Failed to attach eni after %d retries.\n", maxRetries)
+		fmt.Printf("Failed to check ENI status after %d retries.\n", maxRetries)
 		return microerror.Mask(err)
 	}
 
