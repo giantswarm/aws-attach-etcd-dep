@@ -26,3 +26,7 @@ func tagKey(input string) *string {
 func tagValue(input string) []*string {
 	return []*string{aws.String(input)}
 }
+
+func azKeyFilter() *string {
+	return aws.String("availability-zone")
+}
